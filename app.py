@@ -1,25 +1,18 @@
-from flask import Flask
-import mysql.connector
+from flask import Flask, redirect, url_for
+from flask_mysqldb import MySQL
+from config import Config
 
 app = Flask(__name__)
+app.config.from_object(Config)
 
-conn=mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="Project@123",
-    database="computer_pos"
-)
+mysql = MySQL(app)
+
+from routes.auth import auth
+app.register_blueprint(auth)
 
 @app.route('/')
-def home():
-    return "Database Connected Successfully!"
+def index():
+    return redirect(url_for('auth.login'))
 
-@app.route('/products')
-def products():
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM products")
-    result = cursor.fetchall()
-    return str(result)
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     app.run(debug=True)
