@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}Edit Supplier{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-dark text-white">Edit Supplier</div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('suppliers.update', id=supplier[0]) }}">
+                    <div class="mb-3">
+                        <label class="form-label">Supplier Name</label>
+                        <input type="text" name="name" class="form-control"
+                               value="{{ supplier[1] }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Contact Number</label>
+                        <input type="text" name="contact_no" class="form-control"
+                               value="{{ supplier[2] }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="email" class="form-control"
+                               value="{{ supplier[3] }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Address</label>
+                        <input type="text" name="address" class="form-control"
+                               value="{{ supplier[4] }}">
+                    </div>
+                    <button type="submit" class="btn btn-dark w-100">Update</button>
+                    <a href="{{ url_for('suppliers.index') }}"
+                       class="btn btn-secondary w-100 mt-2">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

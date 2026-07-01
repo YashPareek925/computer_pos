@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 import bcrypt
+from extensions import mysql
 
 auth = Blueprint('auth', __name__)
 
@@ -9,9 +10,8 @@ def login():
         username = request.form['username']
         password = request.form['password']
 
-        from app import mysql
         cursor = mysql.connection.cursor()
-        cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
+        cursor.execute("SELECT * FROM users WHERE username= %s", (username,))
         user = cursor.fetchone()
         cursor.close()
 
@@ -21,7 +21,7 @@ def login():
             session['role'] = user[3]
 
             if user[3] == 'admin':
-                return redirect(url_for('dashboard.index'))
+                return redirect(url_for('products.index'))
             else:
                 return redirect(url_for('sales.index'))
         else:

@@ -1,14 +1,24 @@
 from flask import Flask, redirect, url_for
-from flask_mysqldb import MySQL
 from config import Config
+from extensions import mysql
+from routes.customers import customers
+from routes.suppliers import suppliers
+from routes.purchases import purchases
+
 
 app = Flask(__name__)
 app.config.from_object(Config)
 
-mysql = MySQL(app)
+mysql.init_app(app)
 
 from routes.auth import auth
+from routes.products import products
+
 app.register_blueprint(auth)
+app.register_blueprint(products)
+app.register_blueprint(customers)
+app.register_blueprint(suppliers)
+app.register_blueprint(purchases)
 
 @app.route('/')
 def index():

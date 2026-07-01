@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}Customers - POS System{% endblock %}
+
+{% block content %}
+<h3 class="mb-3">Customer Management</h3>
+
+<!-- Add Customer Form -->
+<div class="card mb-4">
+    <div class="card-header bg-dark text-white">Add New Customer</div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('customers.add') }}">
+            <div class="row g-2">
+                <div class="col-md-2">
+                    <input type="text" name="name" class="form-control"
+                           placeholder="Full Name" required>
+                </div>
+                <div class="col-md-2">
+                    <input type="text" name="address" class="form-control"
+                           placeholder="Address">
+                </div>
+                <div class="col-md-2">
+                    <input type="text" name="city" class="form-control"
+                           placeholder="City">
+                </div>
+                <div class="col-md-2">
+                    <input type="email" name="email" class="form-control"
+                           placeholder="Email">
+                </div>
+                <div class="col-md-2">
+                    <input type="text" name="contact_no" class="form-control"
+                           placeholder="WhatsApp Number" required>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-dark w-100">Add</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Customers Table -->
+<div class="card">
+    <div class="card-header bg-dark text-white">All Customers</div>
+    <div class="card-body">
+        <table class="table table-bordered table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Address</th>
+                    <th>City</th>
+                    <th>Email</th>
+                    <th>Contact No</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in customers %}
+                <tr>
+                    <td>{{ c[0] }}</td>
+                    <td>{{ c[1] }}</td>
+                    <td>{{ c[2] }}</td>
+                    <td>{{ c[3] }}</td>
+                    <td>{{ c[4] }}</td>
+                    <td>{{ c[5] }}</td>
+                    <td>
+                        <a href="{{ url_for('customers.edit', id=c[0]) }}"
+                           class="btn btn-sm btn-warning">Edit</a>
+                        <a href="{{ url_for('customers.delete', id=c[0]) }}"
+                           class="btn btn-sm btn-danger"
+                           onclick="return confirm('Are you sure?')">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

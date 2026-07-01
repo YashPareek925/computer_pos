@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block title %}Purchases - POS System{% endblock %}
+
+{% block content %}
+<h3 class="mb-3">Purchase Management</h3>
+
+<!-- Add Purchase Form -->
+<div class="card mb-4">
+    <div class="card-header bg-dark text-white">Add New Purchase</div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('purchases.add') }}">
+            <div class="row g-2">
+                <div class="col-md-2">
+                    <input type="text" name="bill_no" class="form-control"
+                           placeholder="Bill No" required>
+                </div>
+                <div class="col-md-2">
+                    <input type="date" name="date" class="form-control"
+                           value="{{ today }}" required>
+                </div>
+                <div class="col-md-2">
+                    <select name="product_id" class="form-select" required>
+                        <option value="">Select Product</option>
+                        {% for p in products %}
+                        <option value="{{ p[0] }}">{{ p[1] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="supplier_id" class="form-select" required>
+                        <option value="">Select Supplier</option>
+                        {% for s in suppliers %}
+                        <option value="{{ s[0] }}">{{ s[1] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-1">
+                    <input type="number" name="quantity" class="form-control"
+                           placeholder="Qty" required>
+                </div>
+                <div class="col-md-2">
+                    <input type="number" step="0.01" name="cost_price"
+                           class="form-control" placeholder="Cost Price" required>
+                </div>
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-dark w-100">Add</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Purchases Table -->
+<div class="card">
+    <div class="card-header bg-dark text-white">Purchase History</div>
+    <div class="card-body">
+        <table class="table table-bordered table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Bill No</th>
+                    <th>Date</th>
+                    <th>Product</th>
+                    <th>Supplier</th>
+                    <th>Quantity</th>
+                    <th>Cost Price</th>
+                    <th>Total</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in purchases %}
+                <tr>
+                    <td>{{ p[0] }}</td>
+                    <td>{{ p[1] }}</td>
+                    <td>{{ p[2] }}</td>
+                    <td>{{ p[3] }}</td>
+                    <td>{{ p[4] }}</td>
+                    <td>{{ p[5] }}</td>
+                    <td>₹{{ p[6] }}</td>
+                    <td>₹{{ p[5] * p[6] }}</td>
+                    <td>
+                        <a href="{{ url_for('purchases.delete', id=p[0]) }}"
+                           class="btn btn-sm btn-danger"
+                           onclick="return confirm('Delete this purchase? Stock will be reversed.')">
+                           Delete
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
