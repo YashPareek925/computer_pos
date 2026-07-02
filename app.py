@@ -4,6 +4,7 @@ from extensions import mysql
 from routes.customers import customers
 from routes.suppliers import suppliers
 from routes.purchases import purchases
+from routes.sales import sales
 
 
 app = Flask(__name__)
@@ -14,11 +15,12 @@ mysql.init_app(app)
 from routes.auth import auth
 from routes.products import products
 
-app.register_blueprint(auth)
+app.register_blueprint(auth)  
 app.register_blueprint(products)
 app.register_blueprint(customers)
 app.register_blueprint(suppliers)
 app.register_blueprint(purchases)
+app.register_blueprint(sales)
 
 @app.route('/')
 def index():

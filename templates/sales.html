@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+{% block title %}Sales - POS System{% endblock %}
+
+{% block content %}
+<h3 class="mb-3">Sales Management</h3>
+
+<!-- Add Sale Form -->
+<div class="card mb-4">
+    <div class="card-header bg-dark text-white">New Sale</div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('sales.add') }}">
+            <div class="row g-2">
+
+                <!-- Date -->
+                <div class="col-md-2">
+                    <input type="date" name="date" class="form-control"
+                           value="{{ today }}" required>
+                </div>
+
+                <!-- Product -->
+                <div class="col-md-2">
+                    <select name="product_id" id="productSelect"
+                            class="form-select" required
+                            onchange="fillPrice()">
+                        <option value="">Select Product</option>
+                        {% for p in products %}
+                        <option value="{{ p[0] }}"
+                                data-price="{{ p[3] }}"
+                                data-stock="{{ p[2] }}">
+                            {{ p[1] }} (Stock: {{ p[2] }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Customer Name with Autocomplete -->
+                <div class="col-md-2" style="position:relative;">
+                    <input type="text" name="customer_name" id="customerName"
+                           class="form-control" placeholder="Customer Name"
+                           autocomplete="off" required
+                           onkeyup="searchCustomer()">
+                    <div id="customerSuggestions"
+                         style="position:absolute; z-index:1000; width:100%;
+                                background:white; border:1px solid #ddd;
+                                display:none; max-height:150px; overflow-y:auto;">
+                    </div>
+                </div>
+
+                <!-- Contact Number -->
+                <div class="col-md-2">
+                    <input type="text" name="contact_no" id="contactNo"
+                           class="form-control" placeholder="WhatsApp Number" required>
+                </div>
+
+                <!-- Quantity -->
+                <div class="col-md-1">
+                    <input type="number" name="quantity" id="quantity"
+                           class="form-control" placeholder="Qty"
+                           min="1" required onchange="calcTotal()">
+                </div>
+
+                <!-- Price -->
+                <div class="col-md-1">
+                    <input type="number" step="0.01" name="sales_price"
+                           id="salesPrice" class="form-control"
+                           placeholder="Price" required onchange="calcTotal()">
+                </div>
+
+                <!-- Total (readonly) -->
+                <div class="col-md-1">
+                    <input type="text" id="totalAmount" class="form-control"
+                           placeholder="Total" readonly>
+                </div>
+
+                <!-- Submit -->
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-dark w-100">Add</button>
+                </div>
+
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Sales Table -->
+<div class="card">
+    <div class="card-header bg-dark text-white">Sales History</div>
+    <div class="card-body">
+        <table class="table table-bordered table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Invoice No</th>
+                    <th>Date</th>
+                    <th>Product</th>
+                    <th>Customer</th>
+                    <th>Qty</th>
+                    <th>Price</th>
+                    <th>Total</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in sales %}
+                <tr>
+                    <td>{{ s[0] }}</td>
+                    <td>{{ s[1] }}</td>
+                    <td>{{ s[2] }}</td>
+                    <td>{{ s[3] }}</td>
+                    <td>{{ s[4] }}</td>
+                    <td>₹{{ s[5] }}</td>
+                    <td>₹{{ s[6] }}</td>
+                    <td>
+                        <!-- WhatsApp Bill Button -->
+                        <a href="https://wa.me/91{{ s[7] }}?text=Dear%20{{ s[3] }}%2C%0AThank%20you%20for%20your%20purchase%21%0A%0AInvoice%20No%3A%20{{ s[0] }}%0ADate%3A%20{{ s[1] }}%0AProduct%3A%20{{ s[2] }}%0AQty%3A%20{{ s[4] }}%0APrice%3A%20Rs.{{ s[5] }}%0ATotal%3A%20Rs.{{ s[6] }}%0A%0AThank%20you%20for%20shopping%20with%20us%21"
+                           target="_blank"
+                           class="btn btn-sm btn-success">
+                            WhatsApp Bill
+                        </a>
+                        <a href="{{ url_for('sales.delete', id=s[0]) }}"
+                           class="btn btn-sm btn-danger"
+                           onclick="return confirm('Delete this sale? Stock will be reversed.')">
+                            Delete
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+function fillPrice() {
+    let select = document.getElementById('productSelect');
+    let selected = select.options[select.selectedIndex];
+    document.getElementById('salesPrice').value = selected.dataset.price || '';
+    calcTotal();
+}
+
+function calcTotal() {
+    let qty = document.getElementById('quantity').value;
+    let price = document.getElementById('salesPrice').value;
+    if (qty && price) {
+        document.getElementById('totalAmount').value = 
+            '₹' + (qty * price).toFixed(2);
+    }
+}
+
+function searchCustomer() {
+    let query = document.getElementById('customerName').value;
+    if (query.length < 2) {
+        document.getElementById('customerSuggestions').style.display = 'none';
+        return;
+    }
+
+    fetch('/sales/search-customer?q=' + query)
+        .then(res => res.json())
+        .then(data => {
+            let box = document.getElementById('customerSuggestions');
+            if (data.length === 0) {
+                box.style.display = 'none';
+                return;
+            }
+            box.innerHTML = '';
+            data.forEach(c => {
+                let div = document.createElement('div');
+                div.textContent = c.name + ' — ' + c.contact_no;
+                div.style.padding = '8px';
+                div.style.cursor = 'pointer';
+                div.onmouseover = () => div.style.background = '#f0f0f0';
+                div.onmouseout = () => div.style.background = 'white';
+                div.onclick = () => {
+                    document.getElementById('customerName').value = c.name;
+                    document.getElementById('contactNo').value = c.contact_no;
+                    box.style.display = 'none';
+                };
+                box.appendChild(div);
+            });
+            box.style.display = 'block';
+        });
+}
+
+// Click bahar karo to suggestions band ho
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('#customerName')) {
+        document.getElementById('customerSuggestions').style.display = 'none';
+    }
+});
+</script>
+{% endblock %}
