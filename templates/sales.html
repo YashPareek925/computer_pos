@@ -14,7 +14,7 @@
                 <!-- Date -->
                 <div class="col-md-2">
                     <input type="date" name="date" class="form-control"
-                           value="{{ today }}" required>
+                           value="{{ today }}" min="{{ today }}" max="{{today}}" required>
                 </div>
 
                 <!-- Product -->
@@ -49,7 +49,10 @@
                 <!-- Contact Number -->
                 <div class="col-md-2">
                     <input type="text" name="contact_no" id="contactNo"
-                           class="form-control" placeholder="WhatsApp Number" required>
+                        class="form-control" placeholder="WhatsApp Number"
+                        pattern="[0-9]{10}" maxlength="10"
+                        title="10 digit number only"
+                        required>
                 </div>
 
                 <!-- Quantity -->

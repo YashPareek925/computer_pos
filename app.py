@@ -5,6 +5,7 @@ from routes.customers import customers
 from routes.suppliers import suppliers
 from routes.purchases import purchases
 from routes.sales import sales
+from routes.dashboard import dashboard
 
 
 app = Flask(__name__)
@@ -21,6 +22,7 @@ app.register_blueprint(customers)
 app.register_blueprint(suppliers)
 app.register_blueprint(purchases)
 app.register_blueprint(sales)
+app.register_blueprint(dashboard)
 
 @app.route('/')
 def index():

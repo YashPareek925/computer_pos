@@ -21,7 +21,7 @@ def login():
             session['role'] = user[3]
 
             if user[3] == 'admin':
-                return redirect(url_for('products.index'))
+                return redirect(url_for('dashboard.index'))
             else:
                 return redirect(url_for('sales.index'))
         else:

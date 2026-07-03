@@ -53,6 +53,19 @@ def index():
 @sales.route('/sales/add', methods=['POST'])
 @login_required
 def add():
+    # Date validation - past date check
+    from datetime import datetime
+    sale_date = request.form['date']
+    if sale_date < str(date.today()):
+        flash('Past date sales not allowed.', 'danger')
+        return redirect(url_for('sales.index'))
+
+    # Contact number validation
+    contact_no = request.form['contact_no'].strip()
+    if not contact_no.isdigit() or len(contact_no) != 10:
+        flash('Invalid WhatsApp number. Enter 10 digits only.', 'danger')
+        return redirect(url_for('sales.index'))
+    
     sale_date = request.form['date']
     product_id = request.form['product_id']
     customer_name = request.form['customer_name'].strip()
