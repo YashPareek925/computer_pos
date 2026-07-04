@@ -27,9 +27,57 @@ def login():
         else:
             flash('Invalid username or password', 'danger')
             return redirect(url_for('auth.login'))
-
     return render_template('login.html')
 
+@auth.route('/manage-users')
+def manage_users():
+    if session.get('role') != 'admin':
+        flash('Admin access only.', 'danger')
+        return redirect(url_for('dashboard.index'))
+
+    from extensions import mysql
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT user_id, username, role FROM users")
+    all_users = cursor.fetchall()
+    cursor.close()
+    return render_template('manage_users.html', users=all_users)
+
+@auth.route('/manage-users/add', methods=['POST'])
+def add_user():
+    if session.get('role') != 'admin':
+        flash('Admin access only.', 'danger')
+        return redirect(url_for('dashboard.index'))
+
+    username = request.form['username']
+    password = request.form['password']
+    role = request.form['role']
+
+    hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+
+    from extensions import mysql
+    cursor = mysql.connection.cursor()
+    cursor.execute(
+        "INSERT INTO users (username, password, role) VALUES (%s, %s, %s)",
+        (username, hashed.decode('utf-8'), role)
+    )
+    mysql.connection.commit()
+    cursor.close()
+    flash('User added successfully.', 'success')
+    return redirect(url_for('auth.manage_users'))
+
+@auth.route('/manage-users/delete/<int:id>')
+def delete_user(id):
+    if session.get('role') != 'admin':
+        flash('Admin access only.', 'danger')
+        return redirect(url_for('dashboard.index'))
+
+    from extensions import mysql
+    cursor = mysql.connection.cursor()
+    cursor.execute("DELETE FROM users WHERE user_id = %s", (id,))
+    mysql.connection.commit()
+    cursor.close()
+    flash('User deleted.', 'success')
+    return redirect(url_for('auth.manage_users'))
 
 @auth.route('/logout')
 def logout():

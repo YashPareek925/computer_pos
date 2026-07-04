@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block title %}Manage Users{% endblock %}
+
+{% block content %}
+<h3 class="mb-3">Manage Users</h3>
+
+<!-- Add User Form -->
+<div class="card mb-4">
+    <div class="card-header bg-dark text-white">Add New User</div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('auth.add_user') }}">
+            <div class="row g-2">
+                <div class="col-md-3">
+                    <input type="text" name="username" class="form-control"
+                           placeholder="Username" required>
+                </div>
+                <div class="col-md-3">
+                    <input type="password" name="password" class="form-control"
+                           placeholder="Password" required>
+                </div>
+                <div class="col-md-3">
+                    <select name="role" class="form-select" required>
+                        <option value="cashier">Cashier</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-dark w-100">Add User</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Users Table -->
+<div class="card">
+    <div class="card-header bg-dark text-white">All Users</div>
+    <div class="card-body">
+        <table class="table table-bordered table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Role</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td>{{ u[0] }}</td>
+                    <td>{{ u[1] }}</td>
+                    <td>
+                        <span class="badge {% if u[2] == 'admin' %}bg-dark{% else %}bg-secondary{% endif %}">
+                            {{ u[2] }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if u[1] != 'admin' %}
+                        <a href="{{ url_for('auth.delete_user', id=u[0]) }}"
+                           class="btn btn-sm btn-danger"
+                           onclick="return confirm('Delete this user?')">
+                            Delete
+                        </a>
+                        {% else %}
+                        <span class="text-muted">Protected</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
