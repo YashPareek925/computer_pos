@@ -13,9 +13,20 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated
 
+def admin_required(f):
+    from functools import wraps
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if session.get('role') != 'admin':
+            flash('Admin access only.', 'danger')
+            return redirect(url_for('sales.index'))
+        return f(*args, **kwargs)
+    return decorated
+
 # All Suppliers
 @suppliers.route('/suppliers')
 @login_required
+@admin_required
 def index():
     cursor = mysql.connection.cursor()
     cursor.execute("SELECT * FROM supplier")
@@ -26,6 +37,7 @@ def index():
 # Add Supplier
 @suppliers.route('/suppliers/add', methods=['POST'])
 @login_required
+@admin_required
 def add():
     name = request.form['name']
     contact_no = request.form['contact_no']
@@ -45,6 +57,7 @@ def add():
 # Edit Supplier - Load
 @suppliers.route('/suppliers/edit/<int:id>')
 @login_required
+@admin_required
 def edit(id):
     cursor = mysql.connection.cursor()
     cursor.execute("SELECT * FROM supplier WHERE supplier_id = %s", (id,))
@@ -55,6 +68,7 @@ def edit(id):
 # Edit Supplier - Save
 @suppliers.route('/suppliers/update/<int:id>', methods=['POST'])
 @login_required
+@admin_required
 def update(id):
     name = request.form['name']
     contact_no = request.form['contact_no']
@@ -74,6 +88,7 @@ def update(id):
 # Delete Supplier
 @suppliers.route('/suppliers/delete/<int:id>')
 @login_required
+@admin_required
 def delete(id):
     cursor = mysql.connection.cursor()
     cursor.execute("DELETE FROM supplier WHERE supplier_id = %s", (id,))

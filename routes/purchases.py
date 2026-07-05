@@ -14,9 +14,20 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated
 
+def admin_required(f):
+    from functools import wraps
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if session.get('role') != 'admin':
+            flash('Admin access only.', 'danger')
+            return redirect(url_for('sales.index'))
+        return f(*args, **kwargs)
+    return decorated
+
 # All Purchases
 @purchases.route('/purchases')
 @login_required
+@admin_required
 def index():
     cursor = mysql.connection.cursor()
     cursor.execute("""
@@ -50,6 +61,7 @@ def index():
 # Add Purchase
 @purchases.route('/purchases/add', methods=['POST'])
 @login_required
+@admin_required
 def add():
     bill_no = request.form['bill_no']
     purchase_date = request.form['date']
@@ -73,6 +85,7 @@ def add():
 # Delete Purchase
 @purchases.route('/purchases/delete/<int:id>')
 @login_required
+@admin_required
 def delete(id):
     cursor = mysql.connection.cursor()
 

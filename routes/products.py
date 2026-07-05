@@ -13,8 +13,19 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated
 
+def admin_required(f):
+    from functools import wraps
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if session.get('role') != 'admin':
+            flash('Admin access only.', 'danger')
+            return redirect(url_for('sales.index'))
+        return f(*args, **kwargs)
+    return decorated
+
 @products.route('/products')
 @login_required
+@admin_required
 def index():
     cursor = mysql.connection.cursor()
     cursor.execute("SELECT * FROM product")
@@ -24,6 +35,7 @@ def index():
 
 @products.route('/products/add', methods=['POST'])
 @login_required
+@admin_required
 def add():
     name = request.form['product_name']
     stock = request.form['stock']
@@ -41,6 +53,7 @@ def add():
 
 @products.route('/products/edit/<int:id>')
 @login_required
+@admin_required
 def edit(id):
     cursor = mysql.connection.cursor()
     cursor.execute("SELECT * FROM product WHERE product_id = %s", (id,))
@@ -50,6 +63,7 @@ def edit(id):
 
 @products.route('/products/update/<int:id>', methods=['POST'])
 @login_required
+@admin_required
 def update(id):
     name = request.form['product_name']
     stock = request.form['stock']
@@ -67,6 +81,7 @@ def update(id):
 
 @products.route('/products/delete/<int:id>')
 @login_required
+@admin_required
 def delete(id):
     cursor = mysql.connection.cursor()
     cursor.execute("DELETE FROM product WHERE product_id = %s", (id,))
@@ -77,6 +92,7 @@ def delete(id):
 
 @products.route('/products/search')
 @login_required
+@admin_required
 def search():
     query = request.args.get('q', '')
     cursor = mysql.connection.cursor()

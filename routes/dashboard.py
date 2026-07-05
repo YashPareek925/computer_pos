@@ -13,8 +13,19 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated
 
+def admin_required(f):
+    from functools import wraps
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if session.get('role') != 'admin':
+            flash('Admin access only.', 'danger')
+            return redirect(url_for('sales.index'))
+        return f(*args, **kwargs)
+    return decorated
+
 @dashboard.route('/dashboard')
 @login_required
+@admin_required
 def index():
     cursor = mysql.connection.cursor()
 
