@@ -37,6 +37,9 @@ def index():
     cursor.execute("SELECT COUNT(*) FROM customer")
     total_customers = cursor.fetchone()[0]
 
+    cursor.execute("SELECT COUNT(*) FROM purchase")
+    total_purchases = cursor.fetchone()[0]
+
     # Today's Sales Count
     cursor.execute("SELECT COUNT(*) FROM sales WHERE date = CURDATE()")
     today_sales = cursor.fetchone()[0]
@@ -89,6 +92,7 @@ def index():
     return render_template('dashboard.html',
                            total_products=total_products,
                            total_customers=total_customers,
+                           total_purchases=total_purchases,
                            today_sales=today_sales,
                            today_revenue=today_revenue,
                            total_revenue=total_revenue,

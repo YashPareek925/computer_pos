@@ -1,17 +1,487 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}POS System{% endblock %}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}POS System{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; }
+
+    :root {
+      --bg-page: #0f1117;
+      --bg-sidebar: #1a1d27;
+      --bg-card: #1a1d27;
+      --bg-input: #0f1117;
+      --border-col: #2a2d3a;
+      --text-main: #f1f5f9;
+      --text-sub: #64748b;
+      --text-label: #94a3b8;
+      --hover-item: #252836;
+      --active-item: #1e3a5f;
+      --active-text: #3b82f6;
+    }
+
+    :root.light {
+      --bg-page: #f1f5f9;
+      --bg-sidebar: #ffffff;
+      --bg-card: #ffffff;
+      --bg-input: #f8fafc;
+      --border-col: #e2e8f0;
+      --text-main: #0f172a;
+      --text-sub: #64748b;
+      --text-label: #475569;
+      --hover-item: #f1f5f9;
+      --active-item: #eff6ff;
+      --active-text: #2563eb;
+    }
+
+    body {
+      background: var(--bg-page);
+      color: var(--text-main);
+      transition: background 0.2s, color 0.2s;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 100vh;
+      width: 240px;
+      background: var(--bg-sidebar);
+      border-right: 0.5px solid var(--border-col);
+      display: flex;
+      flex-direction: column;
+      transition: width 0.2s ease;
+      z-index: 100;
+      overflow: hidden;
+    }
+
+    .sidebar.collapsed { width: 60px; }
+
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 1.2rem 1rem;
+      border-bottom: 0.5px solid var(--border-col);
+      min-height: 64px;
+    }
+
+    .sidebar-logo-icon {
+      width: 36px;
+      height: 36px;
+      background: #2563eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-logo-text {
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .sidebar-logo-text h2 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .sidebar-logo-text p {
+      font-size: 10px;
+      color: var(--text-sub);
+      margin-top: 1px;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 0.8rem 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .nav-section-label {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-sub);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      padding: 0.6rem 1rem 0.3rem;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .sidebar.collapsed .nav-section-label { opacity: 0; }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0.6rem 1rem;
+      color: var(--text-sub);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 400;
+      transition: background 0.15s, color 0.15s;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .nav-item:hover {
+      background: var(--hover-item);
+      color: var(--text-main);
+    }
+
+    .nav-item.active {
+      background: var(--active-item);
+      color: var(--active-text);
+      border-right: 2px solid #2563eb;
+    }
+
+    .nav-item i {
+      font-size: 18px;
+      flex-shrink: 0;
+      width: 20px;
+      text-align: center;
+    }
+
+    .nav-item span {
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .sidebar.collapsed .nav-item span { display: none; }
+    .sidebar.collapsed .nav-section-label { display: none; }
+
+    /* Collapse Button */
+    .collapse-btn {
+      padding: 1rem;
+      border-top: 0.5px solid var(--border-col);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      cursor: pointer;
+      color: var(--text-sub);
+      transition: color 0.15s;
+    }
+
+    .collapse-btn:hover { color: var(--text-main); }
+    .sidebar.collapsed .collapse-btn { justify-content: center; }
+
+    /* Main Content */
+    .main-content {
+      margin-left: 240px;
+      min-height: 100vh;
+      transition: margin-left 0.2s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .main-content.expanded { margin-left: 60px; }
+
+    /* Top Header */
+    .top-header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: var(--bg-sidebar);
+      border-bottom: 0.5px solid var(--border-col);
+      padding: 0 1.5rem;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-title {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-main);
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .theme-btn {
+      width: 32px;
+      height: 32px;
+      background: var(--bg-input);
+      border: 0.5px solid var(--border-col);
+      color: var(--text-sub);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 16px;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .theme-btn:hover {
+      border-color: #2563eb;
+      color: var(--text-main);
+    }
+
+    .user-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 10px;
+      background: var(--bg-input);
+      border: 0.5px solid var(--border-col);
+      font-size: 12px;
+      color: var(--text-sub);
+    }
+
+    .user-role-badge {
+      font-size: 10px;
+      padding: 1px 6px;
+      background: #1e3a5f;
+      color: #3b82f6;
+      border-radius: 2px;
+    }
+
+    :root.light .user-role-badge {
+      background: #eff6ff;
+      color: #2563eb;
+    }
+
+    .logout-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: transparent;
+      border: 0.5px solid var(--border-col);
+      color: #ef4444;
+      font-size: 12px;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      text-decoration: none;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .logout-btn:hover {
+      border-color: #ef4444;
+      background: rgba(239,68,68,0.08);
+    }
+
+    /* Page Content */
+    .page-content {
+      padding: 1.5rem;
+      flex: 1;
+    }
+
+    /* Flash Messages */
+    .flash-success {
+      background: rgba(20,83,45,0.3);
+      border: 0.5px solid #166534;
+      color: #86efac;
+      font-size: 13px;
+      padding: 10px 14px;
+      margin-bottom: 1rem;
+    }
+
+    .flash-danger {
+      background: rgba(127,29,29,0.3);
+      border: 0.5px solid #7f1d1d;
+      color: #fca5a5;
+      font-size: 13px;
+      padding: 10px 14px;
+      margin-bottom: 1rem;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border-col); }
+  </style>
 </head>
 <body>
 
+{% if session.get('user_id') %}
+
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+
+  <!-- Logo -->
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-icon">
+      <i class="ti ti-device-desktop" aria-hidden="true"></i>
+    </div>
+    <div class="sidebar-logo-text">
+      <h2>Computer Shop</h2>
+      <p>POS System</p>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="sidebar-nav">
+
+    {% if session.get('role') == 'admin' %}
+    <div class="nav-section-label">Main</div>
+    <a href="{{ url_for('dashboard.index') }}"
+       class="nav-item {% if request.path == '/dashboard' %}active{% endif %}">
+      <i class="ti ti-layout-dashboard"></i>
+      <span>Dashboard</span>
+    </a>
+    {% endif %}
+
+    <a href="{{ url_for('sales.index') }}"
+       class="nav-item {% if request.path == '/sales' %}active{% endif %}">
+      <i class="ti ti-shopping-cart"></i>
+      <span>Sales</span>
+    </a>
+
+    {% if session.get('role') == 'admin' %}
+    <div class="nav-section-label">Inventory</div>
+    <a href="{{ url_for('products.index') }}"
+       class="nav-item {% if request.path == '/products' %}active{% endif %}">
+      <i class="ti ti-box"></i>
+      <span>Products</span>
+    </a>
+
+    <a href="{{ url_for('purchases.index') }}"
+       class="nav-item {% if request.path == '/purchases' %}active{% endif %}">
+      <i class="ti ti-truck-delivery"></i>
+      <span>Purchases</span>
+    </a>
+
+    <div class="nav-section-label">Management</div>
+    {% endif %}
+
+    <a href="{{ url_for('customers.index') }}"
+       class="nav-item {% if request.path == '/customers' %}active{% endif %}">
+      <i class="ti ti-users"></i>
+      <span>Customers</span>
+    </a>
+
+    {% if session.get('role') == 'admin' %}
+    <a href="{{ url_for('suppliers.index') }}"
+       class="nav-item {% if request.path == '/suppliers' %}active{% endif %}">
+      <i class="ti ti-building-store"></i>
+      <span>Suppliers</span>
+    </a>
+
+    <a href="{{ url_for('auth.manage_users') }}"
+       class="nav-item {% if request.path == '/manage-users' %}active{% endif %}">
+      <i class="ti ti-shield-lock"></i>
+      <span>Manage Users</span>
+    </a>
+    {% endif %}
+
+  </nav>
+
+  <!-- Collapse Button -->
+  <div class="collapse-btn" onclick="toggleSidebar()" id="collapseBtn">
+    <i class="ti ti-chevrons-left" id="collapseIcon" style="font-size:18px;"></i>
+  </div>
+
+</div>
+
+<!-- Main Content -->
+<div class="main-content" id="mainContent">
+
+  <!-- Top Header -->
+  <div class="top-header">
+    <span class="header-title">{% block page_title %}{% endblock %}</span>
+    <div class="header-right">
+
+      <!-- Theme Toggle -->
+      <button class="theme-btn" onclick="toggleTheme()" id="themeBtn" title="Toggle theme">
+        <i class="ti ti-moon" id="themeIcon"></i>
+      </button>
+
+      <!-- User Info -->
+      <div class="user-chip">
+        <i class="ti ti-user" style="font-size:14px;"></i>
+        <span>{{ session.get('username') }}</span>
+        <span class="user-role-badge">{{ session.get('role') }}</span>
+      </div>
+
+      <!-- Logout -->
+      <a href="{{ url_for('auth.logout') }}" class="logout-btn">
+        <i class="ti ti-logout" style="font-size:14px;"></i>
+        Logout
+      </a>
+
+    </div>
+  </div>
+
+  <!-- Flash Messages -->
+  <div style="padding: 1rem 1.5rem 0;">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </div>
+
+  <!-- Page Content -->
+  <div class="page-content">
     {% block content %}{% endblock %}
+  </div>
+
+</div>
+
+{% else %}
+{% block login_content %}{% endblock %}
+{% endif %}
+
+<script>
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const main = document.getElementById('mainContent');
+  const icon = document.getElementById('collapseIcon');
+  sidebar.classList.toggle('collapsed');
+  main.classList.toggle('expanded');
+  if (sidebar.classList.contains('collapsed')) {
+    icon.className = 'ti ti-chevrons-right';
+  } else {
+    icon.className = 'ti ti-chevrons-left';
+  }
+  localStorage.setItem('sidebar', sidebar.classList.contains('collapsed') ? 'collapsed' : 'open');
+}
+
+function toggleTheme() {
+  const root = document.documentElement;
+  const icon = document.getElementById('themeIcon');
+  root.classList.toggle('light');
+  icon.className = root.classList.contains('light') ? 'ti ti-sun' : 'ti ti-moon';
+  localStorage.setItem('theme', root.classList.contains('light') ? 'light' : 'dark');
+}
+
+// Persist preferences
+window.addEventListener('DOMContentLoaded', () => {
+  const theme = localStorage.getItem('theme');
+  const sidebarState = localStorage.getItem('sidebar');
+  if (theme === 'light') {
+    document.documentElement.classList.add('light');
+    const icon = document.getElementById('themeIcon');
+    if (icon) icon.className = 'ti ti-sun';
+  }
+  if (sidebarState === 'collapsed') {
+    const sidebar = document.getElementById('sidebar');
+    const main = document.getElementById('mainContent');
+    const icon = document.getElementById('collapseIcon');
+    if (sidebar) sidebar.classList.add('collapsed');
+    if (main) main.classList.add('expanded');
+    if (icon) icon.className = 'ti ti-chevrons-right';
+  }
+});
+</script>
 
 </body>
 </html>

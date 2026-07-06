@@ -1,165 +1,275 @@
 {% extends 'base.html' %}
 {% block title %}Dashboard - POS System{% endblock %}
-
+{% block page_title %}Dashboard{% endblock %}
 {% block content %}
-<h3 class="mb-4">Dashboard</h3>
+<style>
+  .stat-card {
+    background: var(--bg-card);
+    border: 0.5px solid var(--border-col);
+    padding: 1.2rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: border-color 0.15s;
+  }
+  .stat-card:hover { border-color: #2563eb; }
+  .stat-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-sub);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .stat-value {
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--text-main);
+    line-height: 1;
+  }
+  .stat-icon {
+    font-size: 20px;
+    color: #2563eb;
+  }
+  .section-card {
+    background: var(--bg-card);
+    border: 0.5px solid var(--border-col);
+  }
+  .section-header {
+    padding: 0.8rem 1.2rem;
+    border-bottom: 0.5px solid var(--border-col);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .pos-table { width: 100%; border-collapse: collapse; }
+  .pos-table th {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-sub);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0.6rem 1rem;
+    text-align: left;
+    border-bottom: 0.5px solid var(--border-col);
+    background: var(--bg-page);
+  }
+  .pos-table td {
+    font-size: 13px;
+    color: var(--text-main);
+    padding: 0.7rem 1rem;
+    border-bottom: 0.5px solid var(--border-col);
+  }
+  .pos-table tr:last-child td { border-bottom: none; }
+  .pos-table tr:hover td { background: var(--hover-item); }
+  .low-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+    background: rgba(127,29,29,0.3);
+    border: 0.5px solid #7f1d1d;
+    color: #fca5a5;
+  }
+  .grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .grid-2b {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  @media (max-width: 1024px) {
+    .grid-4 { grid-template-columns: repeat(2, 1fr); }
+    .grid-2, .grid-2b { grid-template-columns: 1fr; }
+  }
+</style>
 
 <!-- Stats Cards -->
-<div class="row g-3 mb-4">
-    <div class="col-md-3">
-        <div class="card text-white bg-dark">
-            <div class="card-body">
-                <h6 class="card-title">Total Products</h6>
-                <h2>{{ total_products }}</h2>
-            </div>
-        </div>
+<div class="grid-4">
+  <div class="stat-card">
+    <div class="stat-label">
+      <i class="ti ti-box stat-icon"></i> Total Products
     </div>
-    <div class="col-md-3">
-        <div class="card text-white bg-secondary">
-            <div class="card-body">
-                <h6 class="card-title">Total Customers</h6>
-                <h2>{{ total_customers }}</h2>
-            </div>
-        </div>
+    <div class="stat-value">{{ total_products }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">
+      <i class="ti ti-users stat-icon"></i> Total Customers
     </div>
-    <div class="col-md-3">
-        <div class="card text-white bg-success">
-            <div class="card-body">
-                <h6 class="card-title">Today's Sales</h6>
-                <h2>{{ today_sales }}</h2>
-            </div>
-        </div>
+    <div class="stat-value">{{ total_customers }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">
+      <i class="ti ti-shopping-cart stat-icon"></i> Today's Sales
     </div>
-    <div class="col-md-3">
-        <div class="card text-white bg-primary">
-            <div class="card-body">
-                <h6 class="card-title">Today's Revenue</h6>
-                <h2>₹{{ today_revenue }}</h2>
-            </div>
-        </div>
+    <div class="stat-value">{{ today_sales }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">
+      <i class="ti ti-currency-rupee stat-icon"></i> Today's Revenue
     </div>
+    <div class="stat-value">₹{{ today_revenue }}</div>
+  </div>
 </div>
 
 <!-- Chart + Low Stock -->
-<div class="row g-3 mb-4">
+<div class="grid-2">
 
-    <!-- Weekly Sales Chart -->
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header bg-dark text-white">
-                Last 7 Days Sales
-            </div>
-            <div class="card-body">
-                <canvas id="salesChart"></canvas>
-            </div>
-        </div>
+  <!-- Chart -->
+  <div class="section-card">
+    <div class="section-header">
+      <i class="ti ti-chart-bar" style="color:#2563eb;"></i>
+      Last 7 Days Revenue
     </div>
+    <div style="padding: 1rem;">
+      <canvas id="salesChart" height="100"></canvas>
+    </div>
+  </div>
 
-    <!-- Low Stock Alerts -->
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header bg-danger text-white">
-                ⚠ Low Stock Alerts
-            </div>
-            <div class="card-body p-0">
-                {% if low_stock %}
-                <table class="table table-sm mb-0">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Product</th>
-                            <th>Stock</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in low_stock %}
-                        <tr class="table-danger">
-                            <td>{{ item[0] }}</td>
-                            <td>{{ item[1] }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                {% else %}
-                <p class="text-success p-3 mb-0">All products have sufficient stock.</p>
-                {% endif %}
-            </div>
-        </div>
+  <!-- Low Stock -->
+  <div class="section-card">
+    <div class="section-header">
+      <i class="ti ti-alert-triangle" style="color:#ef4444;"></i>
+      Low Stock Alerts
     </div>
+    {% if low_stock %}
+    <table class="pos-table">
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Stock</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in low_stock %}
+        <tr>
+          <td>{{ item[0] }}</td>
+          <td><span class="low-badge">{{ item[1] }} left</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div style="padding: 1.5rem; font-size: 13px; color: var(--text-sub); text-align: center;">
+      <i class="ti ti-circle-check" style="color:#22c55e; font-size:24px; display:block; margin-bottom:6px;"></i>
+      All products have sufficient stock
+    </div>
+    {% endif %}
+  </div>
 
 </div>
 
-<!-- Total Revenue + Recent Sales -->
-<div class="row g-3">
+<!-- Revenue + Recent Sales -->
+<div class="grid-2b">
 
-    <!-- Total Revenue Card -->
-    <div class="col-md-4">
-        <div class="card text-white bg-dark">
-            <div class="card-body">
-                <h6>Total Revenue (All Time)</h6>
-                <h2>₹{{ total_revenue }}</h2>
-            </div>
-        </div>
+  <!-- Total Revenue -->
+  <div class="stat-card" style="flex-direction: row; align-items: center; justify-content: space-between;">
+    <div>
+      <div class="stat-label">
+        <i class="ti ti-currency-rupee stat-icon"></i> Total Revenue
+      </div>
+      <div class="stat-value" style="margin-top: 8px;">₹{{ total_revenue }}</div>
     </div>
+    <i class="ti ti-trending-up" style="font-size: 40px; color: #2563eb; opacity: 0.3;"></i>
+  </div>
 
-    <!-- Recent Sales -->
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header bg-dark text-white">
-                Recent 5 Sales
-            </div>
-            <div class="card-body p-0">
-                <table class="table table-sm table-bordered mb-0">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Invoice</th>
-                            <th>Date</th>
-                            <th>Product</th>
-                            <th>Customer</th>
-                            <th>Qty</th>
-                            <th>Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for s in recent_sales %}
-                        <tr>
-                            <td>{{ s[0] }}</td>
-                            <td>{{ s[1] }}</td>
-                            <td>{{ s[2] }}</td>
-                            <td>{{ s[3] }}</td>
-                            <td>{{ s[4] }}</td>
-                            <td>₹{{ s[5] }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+  <!-- Total Purchases -->
+  <div class="stat-card" style="flex-direction: row; align-items: center; justify-content: space-between;">
+    <div>
+      <div class="stat-label">
+        <i class="ti ti-truck-delivery stat-icon"></i> Total Purchases
+      </div>
+      <div class="stat-value" style="margin-top: 8px;">{{ total_purchases }}</div>
     </div>
+    <i class="ti ti-package" style="font-size: 40px; color: #2563eb; opacity: 0.3;"></i>
+  </div>
 
 </div>
 
-<!-- Chart.js -->
+<!-- Recent Sales -->
+<div class="section-card">
+  <div class="section-header">
+    <i class="ti ti-clock" style="color:#2563eb;"></i>
+    Recent Sales
+  </div>
+  <table class="pos-table">
+    <thead>
+      <tr>
+        <th>Invoice</th>
+        <th>Date</th>
+        <th>Product</th>
+        <th>Customer</th>
+        <th>Qty</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in recent_sales %}
+      <tr>
+        <td style="color: #3b82f6;">#{{ s[0] }}</td>
+        <td>{{ s[1] }}</td>
+        <td>{{ s[2] }}</td>
+        <td>{{ s[3] }}</td>
+        <td>{{ s[4] }}</td>
+        <td>₹{{ s[5] }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    const ctx = document.getElementById('salesChart').getContext('2d');
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: {{ chart_labels | tojson }},
-            datasets: [{
-                label: 'Revenue (₹)',
-                data: {{ chart_data | tojson }},
-                backgroundColor: 'rgba(33, 37, 41, 0.8)',
-                borderColor: 'rgba(33, 37, 41, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: { beginAtZero: true }
-            }
+const isDark = !document.documentElement.classList.contains('light');
+const ctx = document.getElementById('salesChart').getContext('2d');
+new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: {{ chart_labels | tojson }},
+    datasets: [{
+      label: 'Revenue (₹)',
+      data: {{ chart_data | tojson }},
+      backgroundColor: 'rgba(37, 99, 235, 0.7)',
+      borderColor: '#2563eb',
+      borderWidth: 1,
+      borderRadius: 2,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: ctx => '₹' + ctx.parsed.y
         }
-    });
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        grid: { color: 'rgba(255,255,255,0.05)' },
+        ticks: { color: '#64748b', font: { size: 11 } }
+      },
+      x: {
+        grid: { display: false },
+        ticks: { color: '#64748b', font: { size: 11 } }
+      }
+    }
+  }
+});
 </script>
 {% endblock %}
