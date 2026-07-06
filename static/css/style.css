@@ -1,0 +1,8 @@
+.pos-root.light .login-btn {
+    background: #2563eb;
+    color: #ffffff;
+}
+
+.pos-root.light .login-btn:hover {
+    background: #1d4ed8;
+}

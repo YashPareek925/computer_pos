@@ -1,33 +1,332 @@
 {% extends 'base.html' %}
-
-{% block title %}Login - POS System{% endblock %}
+{% block title %}Login - Computer Shop POS{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-4">
-        <div class="card mt-5">
-            <div class="card-header bg-dark text-white text-center">
-                <h4>Computer Shop POS</h4>
-                <small>Login to continue</small>
-            </div>
-            <div class="card-body">
-                <form method="POST" action="{{ url_for('auth.login') }}">
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Username</label>
-                        <input type="text" class="form-control" id="username" 
-                               name="username" placeholder="Enter username" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="password" 
-                               name="password" placeholder="Enter password" required>
-                    </div>
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-dark">Login</button>
-                    </div>
-                </form>
-            </div>
-        </div>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+  :root {
+    --bg-page: #0f1117;
+    --bg-card: #1a1d27;
+    --bg-input: #0f1117;
+    --border-col: #2a2d3a;
+    --text-main: #f1f5f9;
+    --text-sub: #64748b;
+    --text-label: #94a3b8;
+    --text-placeholder: #3a3f52;
+    --bg-btn: #1a1d27;
+    --btn-border: #2a2d3a;
+    --badge-bg: #1e293b;
+    --badge-text: #475569;
+    --badge-border: #2a2d3a;
+  }
+
+  :root.light {
+    --bg-page: #f1f5f9;
+    --bg-card: #ffffff;
+    --bg-input: #f8fafc;
+    --border-col: #e2e8f0;
+    --text-main: #0f172a;
+    --text-sub: #64748b;
+    --text-label: #475569;
+    --text-placeholder: #cbd5e1;
+    --bg-btn: #ffffff;
+    --btn-border: #e2e8f0;
+    --badge-bg: #f1f5f9;
+    --badge-text: #94a3b8;
+    --badge-border: #e2e8f0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg-page);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+
+  .login-wrapper {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    padding: 2rem;
+    background: var(--bg-page);
+  }
+
+  .login-card {
+    width: 100%;
+    max-width: 400px;
+    background: var(--bg-card);
+    border: 0.5px solid var(--border-col);
+    padding: 2.5rem;
+    transition: background 0.2s, border-color 0.2s;
+  }
+
+  .login-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 2rem;
+  }
+
+  .login-logo-icon {
+    width: 40px;
+    height: 40px;
+    background: #2563eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  .logo-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-main);
+    letter-spacing: 0.3px;
+  }
+
+  .logo-sub {
+    font-size: 11px;
+    color: var(--text-sub);
+    margin-top: 2px;
+  }
+
+  .login-divider {
+    border: none;
+    border-top: 0.5px solid var(--border-col);
+    margin-bottom: 2rem;
+  }
+
+  .login-heading {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--text-main);
+    margin-bottom: 4px;
+  }
+
+  .login-subtext {
+    font-size: 13px;
+    color: var(--text-sub);
+    margin-bottom: 1.8rem;
+  }
+
+  .field-group { margin-bottom: 1.2rem; }
+
+  .field-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-label);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 6px;
+  }
+
+  .field-wrap { position: relative; }
+
+  .field-input {
+    width: 100%;
+    background: var(--bg-input);
+    border: 0.5px solid var(--border-col);
+    color: var(--text-main);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    padding: 10px 38px 10px 14px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .field-input::placeholder { color: var(--text-placeholder); }
+  .field-input:focus { border-color: #2563eb; }
+
+  .field-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-placeholder);
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  .login-btn {
+    width: 100%;
+    background: #2563eb;
+    color: #ffffff;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 11px;
+    border: none;
+    cursor: pointer;
+    margin-top: 0.5rem;
+    transition: background 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .login-btn:hover { background: #1d4ed8; }
+
+  .login-footer {
+    margin-top: 2rem;
+    padding-top: 1.2rem;
+    border-top: 0.5px solid var(--border-col);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .footer-text {
+    font-size: 11px;
+    color: var(--text-placeholder);
+  }
+
+  .footer-badge {
+    font-size: 10px;
+    padding: 3px 8px;
+    background: var(--badge-bg);
+    border: 0.5px solid var(--badge-border);
+    color: var(--badge-text);
+    letter-spacing: 0.3px;
+  }
+
+  .theme-toggle {
+    position: absolute;
+    top: 1.2rem;
+    right: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--bg-btn);
+    border: 0.5px solid var(--btn-border);
+    color: var(--text-sub);
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+
+  .theme-toggle:hover {
+    border-color: #2563eb;
+    color: var(--text-main);
+  }
+
+  .flash-error {
+    background: rgba(127, 29, 29, 0.3);
+    border: 0.5px solid #7f1d1d;
+    color: #fca5a5;
+    font-size: 13px;
+    padding: 10px 14px;
+    margin-bottom: 1rem;
+  }
+</style>
+
+<div class="login-wrapper">
+
+  <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">
+    <i class="ti ti-moon" id="themeIcon"></i>
+    <span id="themeText">Dark</span>
+  </button>
+
+  <div class="login-card">
+
+    <div class="login-logo">
+      <div class="login-logo-icon">
+        <i class="ti ti-device-desktop" aria-hidden="true"></i>
+      </div>
+      <div>
+        <p class="logo-title">Computer Shop POS</p>
+        <p class="logo-sub">Point of Sale System</p>
+      </div>
     </div>
+
+    <hr class="login-divider">
+
+    <p class="login-heading">Welcome back</p>
+    <p class="login-subtext">Sign in to continue</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash-error">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('auth.login') }}">
+
+      <div class="field-group">
+        <label class="field-label">Username</label>
+        <div class="field-wrap">
+          <input class="field-input" type="text"
+                 name="username" placeholder="Enter your username"
+                 required autocomplete="off">
+          <i class="ti ti-user field-icon" aria-hidden="true"></i>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Password</label>
+        <div class="field-wrap">
+          <input class="field-input" type="password"
+                 name="password" id="pwdInput"
+                 placeholder="Enter your password" required>
+          <i class="ti ti-eye field-icon" id="eyeIcon" onclick="togglePwd()"></i>
+        </div>
+      </div>
+
+      <button type="submit" class="login-btn">
+        Sign in <i class="ti ti-arrow-right" aria-hidden="true"></i>
+      </button>
+
+    </form>
+
+    <div class="login-footer">
+      <span class="footer-text">Secure login &middot; Session protected</span>
+      <span class="footer-badge">v1.0</span>
+    </div>
+
+  </div>
 </div>
+
+<script>
+function toggleTheme() {
+  const root = document.documentElement;
+  const icon = document.getElementById('themeIcon');
+  const text = document.getElementById('themeText');
+  root.classList.toggle('light');
+  if (root.classList.contains('light')) {
+    icon.className = 'ti ti-sun';
+    text.textContent = 'Light';
+  } else {
+    icon.className = 'ti ti-moon';
+    text.textContent = 'Dark';
+  }
+}
+
+function togglePwd() {
+  const pwd = document.getElementById('pwdInput');
+  const eye = document.getElementById('eyeIcon');
+  if (pwd.type === 'password') {
+    pwd.type = 'text';
+    eye.className = 'ti ti-eye-off field-icon';
+  } else {
+    pwd.type = 'password';
+    eye.className = 'ti ti-eye field-icon';
+  }
+}
+</script>
 {% endblock %}
