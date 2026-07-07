@@ -253,16 +253,28 @@
   }
 
   .flash-error {
-    background: rgba(220, 38, 38, 0.15);
-    border: 0.5px solid rgba(220, 38, 38, 0.4);
-    color: #fca5a5;
-    font-size: 13px;
-    padding: 10px 14px;
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+  background: rgba(220, 38, 38, 0.15);
+  border: 0.5px solid rgba(220, 38, 38, 0.4);
+  color: #fca5a5;
+  font-size: 13px;
+  padding: 10px 14px;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+  .flash-success {
+  background: rgba(34, 197, 94, 0.15);
+  border: 0.5px solid rgba(34, 197, 94, 0.4);
+  color: #86efac;
+  font-size: 13px;
+  padding: 10px 14px;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 </style>
 
 <div class="login-wrapper" id="loginWrapper">
@@ -335,7 +347,7 @@
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}
-          <div class="flash-error">
+          <div class="flash-{{ category }}">
             <i class="ti ti-alert-circle" style="font-size:16px;flex-shrink:0;"></i>
             {{ message }}
           </div>
