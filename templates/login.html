@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
 {% block title %}Login - Computer Shop POS{% endblock %}
 {% block page_title %}{% endblock %}
-{% block login_content %}
 
+{% block login_content %}
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 
@@ -44,9 +44,6 @@
     font-family: 'Inter', sans-serif;
     background: var(--bg-page);
     min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     transition: background 0.2s;
   }
 
@@ -59,7 +56,20 @@
     position: relative;
     padding: 2rem;
     background: var(--bg-page);
+    overflow: hidden;
   }
+
+  /* Circuit Board SVG Background */
+  .circuit-bg {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    opacity: 0.06;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  :root.light .circuit-bg { opacity: 0.04; }
 
   .login-card {
     width: 100%;
@@ -67,7 +77,18 @@
     background: var(--bg-card);
     border: 0.5px solid var(--border-col);
     padding: 2.5rem;
+    position: relative;
+    z-index: 1;
     transition: background 0.2s, border-color 0.2s;
+  }
+
+  /* Blue top accent bar */
+  .login-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 3px;
+    background: #2563eb;
   }
 
   .login-logo {
@@ -158,7 +179,10 @@
     color: var(--text-placeholder);
     font-size: 16px;
     cursor: pointer;
+    transition: color 0.15s;
   }
+
+  .field-icon:hover { color: var(--text-sub); }
 
   .login-btn {
     width: 100%;
@@ -192,6 +216,9 @@
   .footer-text {
     font-size: 11px;
     color: var(--text-placeholder);
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }
 
   .footer-badge {
@@ -200,7 +227,6 @@
     background: var(--badge-bg);
     border: 0.5px solid var(--badge-border);
     color: var(--badge-text);
-    letter-spacing: 0.3px;
   }
 
   .theme-toggle {
@@ -218,6 +244,7 @@
     font-size: 11px;
     cursor: pointer;
     transition: border-color 0.15s;
+    z-index: 2;
   }
 
   .theme-toggle:hover {
@@ -226,22 +253,68 @@
   }
 
   .flash-error {
-    background: rgba(127, 29, 29, 0.3);
-    border: 0.5px solid #7f1d1d;
+    background: rgba(220, 38, 38, 0.15);
+    border: 0.5px solid rgba(220, 38, 38, 0.4);
     color: #fca5a5;
     font-size: 13px;
     padding: 10px 14px;
     margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
 </style>
 
-<div class="login-wrapper">
+<div class="login-wrapper" id="loginWrapper">
 
-  <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">
+  <!-- Circuit Board Background -->
+  <svg class="circuit-bg" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <pattern id="circuit" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
+        <!-- Horizontal lines -->
+        <line x1="0" y1="25" x2="40" y2="25" stroke="#2563eb" stroke-width="1"/>
+        <line x1="60" y1="25" x2="100" y2="25" stroke="#2563eb" stroke-width="1"/>
+        <line x1="0" y1="75" x2="30" y2="75" stroke="#2563eb" stroke-width="1"/>
+        <line x1="70" y1="75" x2="100" y2="75" stroke="#2563eb" stroke-width="1"/>
+        <!-- Vertical lines -->
+        <line x1="25" y1="0" x2="25" y2="40" stroke="#2563eb" stroke-width="1"/>
+        <line x1="25" y1="60" x2="25" y2="100" stroke="#2563eb" stroke-width="1"/>
+        <line x1="75" y1="0" x2="75" y2="30" stroke="#2563eb" stroke-width="1"/>
+        <line x1="75" y1="70" x2="75" y2="100" stroke="#2563eb" stroke-width="1"/>
+        <!-- Corner connectors -->
+        <line x1="40" y1="25" x2="40" y2="10" stroke="#2563eb" stroke-width="1"/>
+        <line x1="60" y1="25" x2="60" y2="10" stroke="#2563eb" stroke-width="1"/>
+        <line x1="30" y1="75" x2="30" y2="90" stroke="#2563eb" stroke-width="1"/>
+        <line x1="70" y1="75" x2="70" y2="90" stroke="#2563eb" stroke-width="1"/>
+        <!-- Nodes/dots -->
+        <circle cx="25" cy="25" r="2.5" fill="#2563eb"/>
+        <circle cx="75" cy="25" r="2.5" fill="#2563eb"/>
+        <circle cx="25" cy="75" r="2.5" fill="#2563eb"/>
+        <circle cx="75" cy="75" r="2.5" fill="#2563eb"/>
+        <circle cx="40" cy="10" r="1.5" fill="#2563eb"/>
+        <circle cx="60" cy="10" r="1.5" fill="#2563eb"/>
+        <circle cx="30" cy="90" r="1.5" fill="#2563eb"/>
+        <circle cx="70" cy="90" r="1.5" fill="#2563eb"/>
+        <!-- IC chip center -->
+        <rect x="42" y="42" width="16" height="16" fill="none" stroke="#2563eb" stroke-width="1"/>
+        <line x1="42" y1="46" x2="38" y2="46" stroke="#2563eb" stroke-width="1"/>
+        <line x1="42" y1="50" x2="38" y2="50" stroke="#2563eb" stroke-width="1"/>
+        <line x1="42" y1="54" x2="38" y2="54" stroke="#2563eb" stroke-width="1"/>
+        <line x1="58" y1="46" x2="62" y2="46" stroke="#2563eb" stroke-width="1"/>
+        <line x1="58" y1="50" x2="62" y2="50" stroke="#2563eb" stroke-width="1"/>
+        <line x1="58" y1="54" x2="62" y2="54" stroke="#2563eb" stroke-width="1"/>
+      </pattern>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#circuit)"/>
+  </svg>
+
+  <!-- Theme Toggle -->
+  <button onclick="toggleTheme()" id="themeBtn" class="theme-toggle">
     <i class="ti ti-moon" id="themeIcon"></i>
     <span id="themeText">Dark</span>
   </button>
 
+  <!-- Login Card -->
   <div class="login-card">
 
     <div class="login-logo">
@@ -262,7 +335,10 @@
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}
-          <div class="flash-error">{{ message }}</div>
+          <div class="flash-error">
+            <i class="ti ti-alert-circle" style="font-size:16px;flex-shrink:0;"></i>
+            {{ message }}
+          </div>
         {% endfor %}
       {% endif %}
     {% endwith %}
@@ -296,7 +372,10 @@
     </form>
 
     <div class="login-footer">
-      <span class="footer-text">Secure login &middot; Session protected</span>
+      <span class="footer-text">
+        <i class="ti ti-lock" style="font-size:12px;color:#2563eb;"></i>
+        Secure session
+      </span>
       <span class="footer-badge">v1.0</span>
     </div>
 
@@ -316,6 +395,7 @@ function toggleTheme() {
     icon.className = 'ti ti-moon';
     text.textContent = 'Dark';
   }
+  localStorage.setItem('theme', root.classList.contains('light') ? 'light' : 'dark');
 }
 
 function togglePwd() {
@@ -329,5 +409,14 @@ function togglePwd() {
     eye.className = 'ti ti-eye field-icon';
   }
 }
+
+window.addEventListener('DOMContentLoaded', () => {
+  const theme = localStorage.getItem('theme');
+  if (theme === 'light') {
+    document.documentElement.classList.add('light');
+    document.getElementById('themeIcon').className = 'ti ti-sun';
+    document.getElementById('themeText').textContent = 'Light';
+  }
+});
 </script>
 {% endblock %}
