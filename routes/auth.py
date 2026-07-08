@@ -52,17 +52,26 @@ def add_user():
     password = request.form['password']
     role = request.form['role']
 
-    hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-
     from extensions import mysql
     cursor = mysql.connection.cursor()
+
+    # Pehle check karo username already exist karta hai ya nahi
+    cursor.execute("SELECT user_id FROM users WHERE username = %s", (username,))
+    existing = cursor.fetchone()
+
+    if existing:
+        cursor.close()
+        flash(f'Username "{username}" already exists. Please choose a different username.', 'danger')
+        return redirect(url_for('auth.manage_users'))
+
+    hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
     cursor.execute(
         "INSERT INTO users (username, password, role) VALUES (%s, %s, %s)",
         (username, hashed.decode('utf-8'), role)
     )
     mysql.connection.commit()
     cursor.close()
-    flash('User added successfully.', 'success')
+    flash(f'User "{username}" added successfully.', 'success')
     return redirect(url_for('auth.manage_users'))
 
 @auth.route('/manage-users/delete/<int:id>')
