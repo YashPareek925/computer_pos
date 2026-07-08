@@ -1,193 +1,401 @@
 {% extends 'base.html' %}
 {% block title %}Sales - POS System{% endblock %}
+{% block page_title %}Sales{% endblock %}
 
 {% block content %}
-<h3 class="mb-3">Sales Management</h3>
+<style>
+  .sec-card{background:var(--bg-card);border:0.5px solid var(--border-col);}
+  .sec-hdr{
+    padding:0.8rem 1.2rem;
+    border-bottom:0.5px solid var(--border-col);
+    font-size:13px;font-weight:500;
+    color:var(--text-main);
+    display:flex;align-items:center;gap:8px;
+  }
+  .field-label{
+    display:block;font-size:11px;font-weight:500;
+    color:var(--text-label);text-transform:uppercase;
+    letter-spacing:0.6px;margin-bottom:6px;
+  }
+  .field-input{
+    width:100%;background:var(--bg-input);
+    border:0.5px solid var(--border-col);
+    color:var(--text-main);font-family:'Inter',sans-serif;
+    font-size:13px;padding:8px 12px;outline:none;
+    transition:border-color 0.15s;
+  }
+  .field-input:focus{border-color:#2563eb;}
+  .field-select{
+    width:100%;background:var(--bg-input);
+    border:0.5px solid var(--border-col);
+    color:var(--text-main);font-family:'Inter',sans-serif;
+    font-size:13px;padding:8px 12px;outline:none;
+    transition:border-color 0.15s;cursor:pointer;
+  }
+  .field-select:focus{border-color:#2563eb;}
+  .field-wrap{position:relative;}
+  .suggestion-box{
+    position:absolute;z-index:100;width:100%;
+    background:var(--bg-card);border:0.5px solid var(--border-col);
+    max-height:150px;overflow-y:auto;display:none;top:100%;left:0;
+  }
+  .suggestion-item{
+    padding:8px 12px;font-size:13px;
+    color:var(--text-main);cursor:pointer;
+    border-bottom:0.5px solid var(--border-col);
+    transition:background 0.1s;
+  }
+  .suggestion-item:last-child{border-bottom:none;}
+  .suggestion-item:hover{background:var(--hover-item);}
 
-<!-- Add Sale Form -->
-<div class="card mb-4">
-    <div class="card-header bg-dark text-white">New Sale</div>
-    <div class="card-body">
-        <form method="POST" action="{{ url_for('sales.add') }}">
-            <div class="row g-2">
+  .form-grid{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    gap:0.8rem;
+    padding:1.2rem;
+    align-items:end;
+  }
+  .form-group{display:flex;flex-direction:column;}
 
-                <!-- Date -->
-                <div class="col-md-2">
-                    <input type="date" name="date" class="form-control"
-                           value="{{ today }}" min="{{ today }}" max="{{today}}" required>
-                </div>
+  .btn{
+    padding:8px 14px;font-family:'Inter',sans-serif;
+    font-size:13px;font-weight:500;border:none;
+    cursor:pointer;transition:background 0.15s;
+    display:flex;align-items:center;gap:6px;
+    white-space:nowrap;
+  }
+  .btn-green{background:#22c55e;color:#fff;}
+  .btn-green:hover{background:#16a34a;}
+  .btn-red{background:transparent;border:0.5px solid #dc2626;color:#dc2626;font-size:12px;padding:5px 10px;}
+  .btn-red:hover{background:rgba(220,38,38,0.1);}
+  .btn-whatsapp{background:#25d366;color:#fff;font-size:12px;padding:5px 10px;}
+  .btn-whatsapp:hover{background:#128c7e;}
 
-                <!-- Product -->
-                <div class="col-md-2">
-                    <select name="product_id" id="productSelect"
-                            class="form-select" required
-                            onchange="fillPrice()">
-                        <option value="">Select Product</option>
-                        {% for p in products %}
-                        <option value="{{ p[0] }}"
-                                data-price="{{ p[3] }}"
-                                data-stock="{{ p[2] }}">
-                            {{ p[1] }} (Stock: {{ p[2] }})
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
+  .pos-table{width:100%;border-collapse:collapse;}
+  .pos-table th{
+    font-size:10px;font-weight:500;color:var(--text-sub);
+    text-transform:uppercase;letter-spacing:0.5px;
+    padding:0.6rem 1rem;text-align:left;
+    border-bottom:0.5px solid var(--border-col);
+    background:var(--bg-page);
+  }
+  .pos-table td{
+    font-size:12px;color:var(--text-main);
+    padding:0.65rem 1rem;
+    border-bottom:0.5px solid var(--border-col);
+  }
+  .pos-table tr:last-child td{border-bottom:none;}
+  .pos-table tr:hover td{background:var(--hover-item);}
 
-                <!-- Customer Name with Autocomplete -->
-                <div class="col-md-2" style="position:relative;">
-                    <input type="text" name="customer_name" id="customerName"
-                           class="form-control" placeholder="Customer Name"
-                           autocomplete="off" required
-                           onkeyup="searchCustomer()">
-                    <div id="customerSuggestions"
-                         style="position:absolute; z-index:1000; width:100%;
-                                background:white; border:1px solid #ddd;
-                                display:none; max-height:150px; overflow-y:auto;">
-                    </div>
-                </div>
+  .invoice-no{color:#3b82f6;font-weight:500;}
+  .total-val{color:#22c55e;font-weight:500;}
 
-                <!-- Contact Number -->
-                <div class="col-md-2">
-                    <input type="text" name="contact_no" id="contactNo"
-                        class="form-control" placeholder="WhatsApp Number"
-                        pattern="[0-9]{10}" maxlength="10"
-                        title="10 digit number only"
-                        required>
-                </div>
+  .search-wrap{
+    padding:1rem 1.2rem;
+    border-bottom:0.5px solid var(--border-col);
+    display:flex;align-items:center;gap:8px;
+  }
+  .search-input{
+    flex:1;background:var(--bg-input);
+    border:0.5px solid var(--border-col);
+    color:var(--text-main);font-family:'Inter',sans-serif;
+    font-size:13px;padding:7px 12px;outline:none;
+    transition:border-color 0.15s;
+  }
+  .search-input:focus{border-color:#2563eb;}
 
-                <!-- Quantity -->
-                <div class="col-md-1">
-                    <input type="number" name="quantity" id="quantity"
-                           class="form-control" placeholder="Qty"
-                           min="1" required onchange="calcTotal()">
-                </div>
+  .empty-state{
+    padding:3rem;text-align:center;
+    font-size:13px;color:var(--text-sub);
+  }
 
-                <!-- Price -->
-                <div class="col-md-1">
-                    <input type="number" step="0.01" name="sales_price"
-                           id="salesPrice" class="form-control"
-                           placeholder="Price" required onchange="calcTotal()">
-                </div>
+  .actions-wrap{display:flex;align-items:center;gap:6px;}
 
-                <!-- Total (readonly) -->
-                <div class="col-md-1">
-                    <input type="text" id="totalAmount" class="form-control"
-                           placeholder="Total" readonly>
-                </div>
+  @media(max-width:1200px){
+    .form-grid{grid-template-columns:repeat(3,1fr);}
+  }
+</style>
 
-                <!-- Submit -->
-                <div class="col-md-1">
-                    <button type="submit" class="btn btn-dark w-100">Add</button>
-                </div>
+<!-- New Sale Form -->
+<div class="sec-card" style="margin-bottom:1.5rem;">
+  <div class="sec-hdr">
+    <i class="ti ti-plus" style="color:#22c55e;font-size:16px;"></i>
+    New sale
+  </div>
 
-            </div>
-        </form>
+  <form method="POST" action="{{ url_for('sales.add') }}">
+    <div class="form-grid">
+
+      <!-- Date -->
+      <div class="form-group">
+        <label class="field-label">Date</label>
+        <input type="date" name="date" class="field-input"
+               value="{{ today }}" min="{{ today }}" max="{{ today }}" required>
+      </div>
+
+      <!-- Product -->
+      <div class="form-group">
+        <label class="field-label">Product</label>
+        <select name="product_id" id="productSelect"
+                class="field-select" required onchange="fillPrice()">
+          <option value="">Select product</option>
+          {% for p in products %}
+          <option value="{{ p[0] }}"
+                  data-price="{{ p[3] }}"
+                  data-stock="{{ p[2] }}">
+            {{ p[1] }} ({{ p[2] }})
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Customer Name -->
+      <div class="form-group" style="position:relative;">
+        <label class="field-label">Customer name</label>
+        <div class="field-wrap">
+          <input type="text" name="customer_name" id="customerName"
+                 class="field-input" placeholder="Type name..."
+                 autocomplete="off" required onkeyup="searchCustomer()">
+          <div class="suggestion-box" id="suggestionBox"></div>
+        </div>
+      </div>
+
+      <!-- WhatsApp Number -->
+      <div class="form-group">
+        <label class="field-label">WhatsApp no.</label>
+        <input type="tel" name="contact_no" id="contactNo"
+               class="field-input" placeholder="10 digit number"
+               pattern="[0-9]{10}" maxlength="10"
+               oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+               title="10 digit number only" required>
+      </div>
+
+      <!-- Quantity -->
+      <div class="form-group">
+        <label class="field-label">Quantity</label>
+        <input type="number" name="quantity" id="quantity"
+               class="field-input" placeholder="Qty"
+               min="1" required onchange="calcTotal()">
+      </div>
+
+      <!-- Price -->
+      <div class="form-group">
+        <label class="field-label">Price (₹)</label>
+        <input type="number" step="0.01" name="sales_price"
+               id="salesPrice" class="field-input"
+               placeholder="Auto-fill" required onchange="calcTotal()">
+      </div>
+
+      <!-- Submit -->
+      <div class="form-group">
+        <label class="field-label">Total</label>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <input type="text" id="totalAmount" class="field-input"
+                 placeholder="₹0.00" readonly
+                 style="background:var(--bg-page);color:#22c55e;font-weight:500;">
+          <button type="submit" class="btn btn-green">
+            <i class="ti ti-plus" style="font-size:14px;"></i> Add
+          </button>
+        </div>
+      </div>
+
     </div>
+  </form>
 </div>
 
-<!-- Sales Table -->
-<div class="card">
-    <div class="card-header bg-dark text-white">Sales History</div>
-    <div class="card-body">
-        <table class="table table-bordered table-hover">
-            <thead class="table-dark">
-                <tr>
-                    <th>Invoice No</th>
-                    <th>Date</th>
-                    <th>Product</th>
-                    <th>Customer</th>
-                    <th>Qty</th>
-                    <th>Price</th>
-                    <th>Total</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for s in sales %}
-                <tr>
-                    <td>{{ s[0] }}</td>
-                    <td>{{ s[1] }}</td>
-                    <td>{{ s[2] }}</td>
-                    <td>{{ s[3] }}</td>
-                    <td>{{ s[4] }}</td>
-                    <td>₹{{ s[5] }}</td>
-                    <td>₹{{ s[6] }}</td>
-                    <td>
-                        <!-- WhatsApp Bill Button -->
-                        <a href="https://wa.me/91{{ s[7] }}?text=Dear%20{{ s[3] }}%2C%0AThank%20you%20for%20your%20purchase%21%0A%0AInvoice%20No%3A%20{{ s[0] }}%0ADate%3A%20{{ s[1] }}%0AProduct%3A%20{{ s[2] }}%0AQty%3A%20{{ s[4] }}%0APrice%3A%20Rs.{{ s[5] }}%0ATotal%3A%20Rs.{{ s[6] }}%0A%0AThank%20you%20for%20shopping%20with%20us%21"
-                           target="_blank"
-                           class="btn btn-sm btn-success">
-                            WhatsApp Bill
-                        </a>
-                        <a href="{{ url_for('sales.delete', id=s[0]) }}"
-                           class="btn btn-sm btn-danger"
-                           onclick="return confirm('Delete this sale? Stock will be reversed.')">
-                            Delete
-                        </a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<!-- Sales History -->
+<div class="sec-card">
+  <div class="sec-hdr" style="justify-content:space-between;">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <i class="ti ti-history" style="color:#2563eb;font-size:16px;"></i>
+      Sales history
     </div>
+    <span style="font-size:11px;color:var(--text-sub);">
+      {{ sales|length }} records
+    </span>
+  </div>
+
+  <!-- Search -->
+  <div class="search-wrap">
+    <i class="ti ti-search" style="color:var(--text-sub);font-size:16px;"></i>
+    <input type="text" class="search-input"
+           placeholder="Search by product or customer..."
+           onkeyup="searchTable(this.value)">
+  </div>
+
+  {% if sales %}
+  <table class="pos-table" id="salesTable">
+    <thead>
+      <tr>
+        <th>Invoice</th>
+        <th>Date</th>
+        <th>Product</th>
+        <th>Customer</th>
+        <th>Qty</th>
+        <th>Price</th>
+        <th>Total</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in sales %}
+      <tr>
+        <td class="invoice-no">#{{ s[0] }}</td>
+        <td>{{ s[1] }}</td>
+        <td>{{ s[2] }}</td>
+        <td>{{ s[3] }}</td>
+        <td>{{ s[4] }}</td>
+        <td>&#8377;{{ s[5] }}</td>
+        <td class="total-val">&#8377;{{ s[6] }}</td>
+        <td class="actions-wrap">
+          <a href="https://wa.me/91{{ s[7] }}?text=Dear%20{{ s[3] }}%2C%0AThank%20you%20for%20your%20purchase%21%0A%0AInvoice%20No%3A%20{{ s[0] }}%0ADate%3A%20{{ s[1] }}%0AProduct%3A%20{{ s[2] }}%0AQty%3A%20{{ s[4] }}%0APrice%3A%20Rs.{{ s[5] }}%0ATotal%3A%20Rs.{{ s[6] }}%0A%0AThank%20you%20for%20shopping%20with%20us%21"
+             target="_blank" class="btn btn-whatsapp">
+            <i class="ti ti-brand-whatsapp" style="font-size:13px;"></i> Bill
+          </a>
+          <a href="{{ url_for('sales.delete', id=s[0]) }}"
+             class="btn btn-red"
+             onclick="return showConfirm(event, this.href)">
+            <i class="ti ti-trash" style="font-size:13px;"></i>
+          </a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">
+    <i class="ti ti-shopping-cart" style="font-size:32px;display:block;margin-bottom:8px;color:var(--border-col);"></i>
+    No sales recorded yet
+  </div>
+  {% endif %}
+</div>
+
+<!-- Custom Confirm Modal -->
+<div id="confirmModal" style="
+  display:none;position:fixed;top:0;left:0;
+  width:100%;height:100%;z-index:1000;
+  background:rgba(0,0,0,0.6);
+  align-items:center;justify-content:center;">
+  <div style="
+    background:var(--bg-card);
+    border:0.5px solid var(--border-col);
+    padding:2rem;width:100%;max-width:380px;
+    position:relative;">
+    <div style="
+      width:44px;height:44px;
+      background:rgba(220,38,38,0.15);
+      border:0.5px solid rgba(220,38,38,0.3);
+      display:flex;align-items:center;justify-content:center;
+      margin-bottom:1rem;">
+      <i class="ti ti-trash" style="color:#dc2626;font-size:20px;"></i>
+    </div>
+    <p style="font-size:15px;font-weight:500;color:var(--text-main);margin-bottom:6px;">
+      Delete this sale?
+    </p>
+    <p style="font-size:13px;color:var(--text-sub);margin-bottom:1.5rem;">
+      Stock will be reversed automatically. This action cannot be undone.
+    </p>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button onclick="closeConfirm()"
+              style="
+                padding:8px 16px;
+                background:transparent;
+                border:0.5px solid var(--border-col);
+                color:var(--text-sub);
+                font-family:'Inter',sans-serif;
+                font-size:13px;cursor:pointer;">
+        Cancel
+      </button>
+      <a id="confirmDeleteBtn"
+         href="#"
+         style="
+           padding:8px 16px;
+           background:#dc2626;
+           color:#fff;
+           font-family:'Inter',sans-serif;
+           font-size:13px;font-weight:500;
+           text-decoration:none;
+           display:flex;align-items:center;gap:6px;">
+        <i class="ti ti-trash" style="font-size:14px;"></i> Delete
+      </a>
+    </div>
+  </div>
 </div>
 
 <script>
 function fillPrice() {
-    let select = document.getElementById('productSelect');
-    let selected = select.options[select.selectedIndex];
-    document.getElementById('salesPrice').value = selected.dataset.price || '';
-    calcTotal();
+  const sel = document.getElementById('productSelect');
+  const opt = sel.options[sel.selectedIndex];
+  document.getElementById('salesPrice').value = opt.dataset.price || '';
+  calcTotal();
 }
 
 function calcTotal() {
-    let qty = document.getElementById('quantity').value;
-    let price = document.getElementById('salesPrice').value;
-    if (qty && price) {
-        document.getElementById('totalAmount').value = 
-            '₹' + (qty * price).toFixed(2);
-    }
+  const qty = document.getElementById('quantity').value;
+  const price = document.getElementById('salesPrice').value;
+  if (qty && price) {
+    document.getElementById('totalAmount').value =
+      '₹' + (qty * price).toFixed(2);
+  }
 }
 
 function searchCustomer() {
-    let query = document.getElementById('customerName').value;
-    if (query.length < 2) {
-        document.getElementById('customerSuggestions').style.display = 'none';
-        return;
-    }
-
-    fetch('/sales/search-customer?q=' + query)
-        .then(res => res.json())
-        .then(data => {
-            let box = document.getElementById('customerSuggestions');
-            if (data.length === 0) {
-                box.style.display = 'none';
-                return;
-            }
-            box.innerHTML = '';
-            data.forEach(c => {
-                let div = document.createElement('div');
-                div.textContent = c.name + ' — ' + c.contact_no;
-                div.style.padding = '8px';
-                div.style.cursor = 'pointer';
-                div.onmouseover = () => div.style.background = '#f0f0f0';
-                div.onmouseout = () => div.style.background = 'white';
-                div.onclick = () => {
-                    document.getElementById('customerName').value = c.name;
-                    document.getElementById('contactNo').value = c.contact_no;
-                    box.style.display = 'none';
-                };
-                box.appendChild(div);
-            });
-            box.style.display = 'block';
-        });
+  const query = document.getElementById('customerName').value;
+  const box = document.getElementById('suggestionBox');
+  if (query.length < 2) { box.style.display = 'none'; return; }
+  fetch('/sales/search-customer?q=' + encodeURIComponent(query))
+    .then(r => r.json())
+    .then(data => {
+      if (!data.length) { box.style.display = 'none'; return; }
+      box.innerHTML = '';
+      data.forEach(c => {
+        const div = document.createElement('div');
+        div.className = 'suggestion-item';
+        div.textContent = c.name + ' — ' + c.contact_no;
+        div.onclick = () => {
+          document.getElementById('customerName').value = c.name;
+          document.getElementById('contactNo').value = c.contact_no;
+          box.style.display = 'none';
+        };
+        box.appendChild(div);
+      });
+      box.style.display = 'block';
+    });
 }
 
-// Click bahar karo to suggestions band ho
-document.addEventListener('click', function(e) {
-    if (!e.target.closest('#customerName')) {
-        document.getElementById('customerSuggestions').style.display = 'none';
-    }
+function searchTable(query) {
+  const rows = document.querySelectorAll('#salesTable tbody tr');
+  query = query.toLowerCase();
+  rows.forEach(row => {
+    const text = row.textContent.toLowerCase();
+    row.style.display = text.includes(query) ? '' : 'none';
+  });
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#customerName')) {
+    document.getElementById('suggestionBox').style.display = 'none';
+  }
 });
+
+let confirmHref = '';
+
+function showConfirm(e, href) {
+  e.preventDefault();
+  confirmHref = href;
+  const modal = document.getElementById('confirmModal');
+  document.getElementById('confirmDeleteBtn').href = href;
+  modal.style.display = 'flex';
+  return false;
+}
+
+function closeConfirm() {
+  document.getElementById('confirmModal').style.display = 'none';
+}
+
+document.getElementById('confirmModal').addEventListener('click', function(e) {
+  if (e.target === this) closeConfirm();
+});
+
 </script>
 {% endblock %}
