@@ -78,8 +78,18 @@ def update(id):
 @login_required
 def delete(id):
     cursor = mysql.connection.cursor()
+    
+    # Pehle check karo customer ki koi sale hai ya nahi
+    cursor.execute("SELECT COUNT(*) FROM sales WHERE customer_id = %s", (id,))
+    sale_count = cursor.fetchone()[0]
+    
+    if sale_count > 0:
+        cursor.close()
+        flash(f'Cannot delete — this customer has {sale_count} sale(s) on record. Delete those sales first.', 'danger')
+        return redirect(url_for('customers.index'))
+    
     cursor.execute("DELETE FROM customer WHERE customer_id = %s", (id,))
     mysql.connection.commit()
     cursor.close()
-    flash('Customer deleted successfully', 'success')
+    flash('Customer deleted successfully.', 'success')
     return redirect(url_for('customers.index'))

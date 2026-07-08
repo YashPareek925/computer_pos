@@ -1,79 +1,277 @@
 {% extends 'base.html' %}
 {% block title %}Customers - POS System{% endblock %}
+{% block page_title %}Customers{% endblock %}
 
 {% block content %}
-<h3 class="mb-3">Customer Management</h3>
+<style>
+  .sec-card{background:var(--bg-card);border:0.5px solid var(--border-col);}
+  .sec-hdr{
+    padding:0.8rem 1.2rem;
+    border-bottom:0.5px solid var(--border-col);
+    font-size:13px;font-weight:500;color:var(--text-main);
+    display:flex;align-items:center;gap:8px;
+  }
+  .field-label{
+    display:block;font-size:11px;font-weight:500;
+    color:var(--text-label);text-transform:uppercase;
+    letter-spacing:0.6px;margin-bottom:6px;
+  }
+  .field-input{
+    width:100%;background:var(--bg-input);
+    border:0.5px solid var(--border-col);
+    color:var(--text-main);font-family:'Inter',sans-serif;
+    font-size:13px;padding:8px 12px;outline:none;
+    transition:border-color 0.15s;
+  }
+  .field-input:focus{border-color:#2563eb;}
+  .form-grid{
+    display:grid;
+    grid-template-columns:2fr 2fr 1fr 1fr 1fr auto;
+    gap:0.8rem;padding:1.2rem;align-items:end;
+  }
+  .form-group{display:flex;flex-direction:column;}
+  .btn{
+    padding:8px 14px;font-family:'Inter',sans-serif;
+    font-size:13px;font-weight:500;border:none;
+    cursor:pointer;transition:background 0.15s;
+    display:flex;align-items:center;gap:6px;
+    text-decoration:none;white-space:nowrap;
+  }
+  .btn-green{background:#22c55e;color:#fff;}
+  .btn-green:hover{background:#16a34a;}
+  .btn-blue{
+    background:transparent;border:0.5px solid #2563eb;
+    color:#2563eb;font-size:12px;padding:5px 10px;
+  }
+  .btn-blue:hover{background:rgba(37,99,235,0.1);}
+  .btn-red{
+    background:transparent;border:0.5px solid #dc2626;
+    color:#dc2626;font-size:12px;padding:5px 10px;
+  }
+  .btn-red:hover{background:rgba(220,38,38,0.1);}
+  .btn-whatsapp{
+    background:#25d366;color:#fff;
+    font-size:12px;padding:5px 10px;
+  }
+  .btn-whatsapp:hover{background:#128c7e;}
+  .pos-table{width:100%;border-collapse:collapse;}
+  .pos-table th{
+    font-size:10px;font-weight:500;color:var(--text-sub);
+    text-transform:uppercase;letter-spacing:0.5px;
+    padding:0.6rem 1rem;text-align:left;
+    border-bottom:0.5px solid var(--border-col);
+    background:var(--bg-page);
+  }
+  .pos-table td{
+    font-size:12px;color:var(--text-main);
+    padding:0.65rem 1rem;
+    border-bottom:0.5px solid var(--border-col);
+  }
+  .pos-table tr:last-child td{border-bottom:none;}
+  .pos-table tr:hover td{background:var(--hover-item);}
+  .search-wrap{
+    padding:1rem 1.2rem;
+    border-bottom:0.5px solid var(--border-col);
+    display:flex;align-items:center;gap:8px;
+  }
+  .search-input{
+    flex:1;background:var(--bg-input);
+    border:0.5px solid var(--border-col);
+    color:var(--text-main);font-family:'Inter',sans-serif;
+    font-size:13px;padding:7px 12px;outline:none;
+    transition:border-color 0.15s;
+  }
+  .search-input:focus{border-color:#2563eb;}
+  .empty-state{
+    padding:3rem;text-align:center;
+    font-size:13px;color:var(--text-sub);
+  }
+  .actions-wrap{display:flex;align-items:center;gap:6px;}
+  .null-val{color:var(--text-sub);font-style:italic;}
+  @media(max-width:1200px){
+    .form-grid{grid-template-columns:repeat(3,1fr);}
+  }
+</style>
 
 <!-- Add Customer Form -->
-<div class="card mb-4">
-    <div class="card-header bg-dark text-white">Add New Customer</div>
-    <div class="card-body">
-        <form method="POST" action="{{ url_for('customers.add') }}">
-            <div class="row g-2">
-                <div class="col-md-2">
-                    <input type="text" name="name" class="form-control"
-                           placeholder="Full Name" required>
-                </div>
-                <div class="col-md-2">
-                    <input type="text" name="address" class="form-control"
-                           placeholder="Address">
-                </div>
-                <div class="col-md-2">
-                    <input type="text" name="city" class="form-control"
-                           placeholder="City">
-                </div>
-                <div class="col-md-2">
-                    <input type="email" name="email" class="form-control"
-                           placeholder="Email">
-                </div>
-                <div class="col-md-2">
-                    <input type="text" name="contact_no" class="form-control"
-                           placeholder="WhatsApp Number" required>
-                </div>
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-dark w-100">Add</button>
-                </div>
-            </div>
-        </form>
+<div class="sec-card" style="margin-bottom:1.5rem;">
+  <div class="sec-hdr">
+    <i class="ti ti-plus" style="color:#22c55e;font-size:16px;"></i>
+    Add new customer
+  </div>
+  <form method="POST" action="{{ url_for('customers.add') }}">
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="field-label">Full name</label>
+        <input type="text" name="name" class="field-input"
+               placeholder="Customer name" required>
+      </div>
+      <div class="form-group">
+        <label class="field-label">Address</label>
+        <input type="text" name="address" class="field-input"
+               placeholder="Address (optional)">
+      </div>
+      <div class="form-group">
+        <label class="field-label">City</label>
+        <input type="text" name="city" class="field-input"
+               placeholder="City">
+      </div>
+      <div class="form-group">
+        <label class="field-label">Email</label>
+        <input type="email" name="email" class="field-input"
+               placeholder="Email (optional)">
+      </div>
+      <div class="form-group">
+        <label class="field-label">WhatsApp no.</label>
+        <input type="tel" name="contact_no" class="field-input"
+               placeholder="10 digits"
+               pattern="[0-9]{10}" maxlength="10"
+               oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+               required>
+      </div>
+      <div class="form-group">
+        <label class="field-label">&nbsp;</label>
+        <button type="submit" class="btn btn-green">
+          <i class="ti ti-plus" style="font-size:14px;"></i> Add
+        </button>
+      </div>
     </div>
+  </form>
 </div>
 
 <!-- Customers Table -->
-<div class="card">
-    <div class="card-header bg-dark text-white">All Customers</div>
-    <div class="card-body">
-        <table class="table table-bordered table-hover">
-            <thead class="table-dark">
-                <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Address</th>
-                    <th>City</th>
-                    <th>Email</th>
-                    <th>Contact No</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for c in customers %}
-                <tr>
-                    <td>{{ c[0] }}</td>
-                    <td>{{ c[1] }}</td>
-                    <td>{{ c[2] }}</td>
-                    <td>{{ c[3] }}</td>
-                    <td>{{ c[4] }}</td>
-                    <td>{{ c[5] }}</td>
-                    <td>
-                        <a href="{{ url_for('customers.edit', id=c[0]) }}"
-                           class="btn btn-sm btn-warning">Edit</a>
-                        <a href="{{ url_for('customers.delete', id=c[0]) }}"
-                           class="btn btn-sm btn-danger"
-                           onclick="return confirm('Are you sure?')">Delete</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<div class="sec-card">
+  <div class="sec-hdr" style="justify-content:space-between;">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <i class="ti ti-users" style="color:#22c55e;font-size:16px;"></i>
+      All customers
     </div>
+    <span style="font-size:11px;color:var(--text-sub);">
+      {{ customers|length }} records
+    </span>
+  </div>
+
+  <div class="search-wrap">
+    <i class="ti ti-search" style="color:var(--text-sub);font-size:16px;"></i>
+    <input type="text" class="search-input"
+           placeholder="Search by name, city or contact..."
+           onkeyup="searchTable(this.value)">
+  </div>
+
+  {% if customers %}
+  <table class="pos-table" id="customerTable">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Address</th>
+        <th>City</th>
+        <th>Email</th>
+        <th>WhatsApp</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in customers %}
+      <tr>
+        <td style="color:var(--text-sub);">#{{ c[0] }}</td>
+        <td style="font-weight:500;">{{ c[1] }}</td>
+        <td>{{ c[2] or '<span class="null-val">—</span>' }}</td>
+        <td>{{ c[3] or '<span class="null-val">—</span>' }}</td>
+        <td>{{ c[4] or '<span class="null-val">—</span>' }}</td>
+        <td>
+          <a href="https://wa.me/91{{ c[5] }}"
+             target="_blank"
+             style="color:#25d366;text-decoration:none;display:flex;align-items:center;gap:4px;font-size:12px;">
+            <i class="ti ti-brand-whatsapp" style="font-size:14px;"></i>
+            {{ c[5] }}
+          </a>
+        </td>
+        <td class="actions-wrap">
+          <a href="{{ url_for('customers.edit', id=c[0]) }}"
+             class="btn btn-blue">
+            <i class="ti ti-edit" style="font-size:13px;"></i> Edit
+          </a>
+          <a href="{{ url_for('customers.delete', id=c[0]) }}"
+             class="btn btn-red"
+             onclick="return showConfirm(event, this.href)">
+            <i class="ti ti-trash" style="font-size:13px;"></i> Delete
+          </a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">
+    <i class="ti ti-users" style="font-size:32px;display:block;margin-bottom:8px;color:var(--border-col);"></i>
+    No customers added yet
+  </div>
+  {% endif %}
 </div>
+
+<!-- Confirm Modal -->
+<div id="confirmModal" style="
+  display:none;position:fixed;top:0;left:0;
+  width:100%;height:100%;z-index:1000;
+  background:rgba(0,0,0,0.6);
+  align-items:center;justify-content:center;">
+  <div style="
+    background:var(--bg-card);
+    border:0.5px solid var(--border-col);
+    padding:2rem;width:100%;max-width:380px;">
+    <div style="
+      width:44px;height:44px;
+      background:rgba(220,38,38,0.15);
+      border:0.5px solid rgba(220,38,38,0.3);
+      display:flex;align-items:center;justify-content:center;
+      margin-bottom:1rem;">
+      <i class="ti ti-trash" style="color:#dc2626;font-size:20px;"></i>
+    </div>
+    <p style="font-size:15px;font-weight:500;color:var(--text-main);margin-bottom:6px;">
+      Delete this customer?
+    </p>
+    <p style="font-size:13px;color:var(--text-sub);margin-bottom:1.5rem;">
+      This will permanently remove the customer record. This cannot be undone.
+    </p>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button onclick="closeConfirm()" style="
+        padding:8px 16px;background:transparent;
+        border:0.5px solid var(--border-col);
+        color:var(--text-sub);font-family:'Inter',sans-serif;
+        font-size:13px;cursor:pointer;">
+        Cancel
+      </button>
+      <a id="confirmDeleteBtn" href="#" style="
+        padding:8px 16px;background:#dc2626;color:#fff;
+        font-family:'Inter',sans-serif;font-size:13px;
+        font-weight:500;text-decoration:none;
+        display:flex;align-items:center;gap:6px;">
+        <i class="ti ti-trash" style="font-size:14px;"></i> Delete
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+function searchTable(query) {
+  const rows = document.querySelectorAll('#customerTable tbody tr');
+  query = query.toLowerCase();
+  rows.forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(query) ? '' : 'none';
+  });
+}
+function showConfirm(e, href) {
+  e.preventDefault();
+  document.getElementById('confirmDeleteBtn').href = href;
+  document.getElementById('confirmModal').style.display = 'flex';
+  return false;
+}
+function closeConfirm() {
+  document.getElementById('confirmModal').style.display = 'none';
+}
+document.getElementById('confirmModal').addEventListener('click', function(e) {
+  if (e.target === this) closeConfirm();
+});
+</script>
 {% endblock %}
