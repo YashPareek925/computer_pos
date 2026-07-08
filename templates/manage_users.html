@@ -1,75 +1,245 @@
 {% extends 'base.html' %}
-{% block title %}Manage Users{% endblock %}
+{% block title %}Manage Users - POS System{% endblock %}
+{% block page_title %}Manage Users{% endblock %}
 
 {% block content %}
-<h3 class="mb-3">Manage Users</h3>
+<style>
+  .sec-card{background:var(--bg-card);border:0.5px solid var(--border-col);}
+  .sec-hdr{
+    padding:0.8rem 1.2rem;
+    border-bottom:0.5px solid var(--border-col);
+    font-size:13px;font-weight:500;color:var(--text-main);
+    display:flex;align-items:center;gap:8px;
+  }
+  .field-label{
+    display:block;font-size:11px;font-weight:500;
+    color:var(--text-label);text-transform:uppercase;
+    letter-spacing:0.6px;margin-bottom:6px;
+  }
+  .field-input,.field-select{
+    width:100%;background:var(--bg-input);
+    border:0.5px solid var(--border-col);
+    color:var(--text-main);font-family:'Inter',sans-serif;
+    font-size:13px;padding:8px 12px;outline:none;
+    transition:border-color 0.15s;
+  }
+  .field-input:focus,.field-select:focus{border-color:#2563eb;}
+  .form-grid{
+    display:grid;
+    grid-template-columns:2fr 2fr 1fr auto;
+    gap:0.8rem;padding:1.2rem;align-items:end;
+  }
+  .form-group{display:flex;flex-direction:column;}
+  .btn{
+    padding:8px 14px;font-family:'Inter',sans-serif;
+    font-size:13px;font-weight:500;border:none;
+    cursor:pointer;transition:background 0.15s;
+    display:flex;align-items:center;gap:6px;
+    text-decoration:none;white-space:nowrap;
+  }
+  .btn-green{background:#22c55e;color:#fff;}
+  .btn-green:hover{background:#16a34a;}
+  .btn-red{
+  background:transparent;
+  border:0.5px solid #dc2626;
+  color:#dc2626;
+  font-size:13px;
+  padding:6px 8px;
+  width:auto;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  }
+  .btn-red:hover{background:rgba(220,38,38,0.1);}
+  .pos-table{width:100%;border-collapse:collapse;}
+  .pos-table th{
+    font-size:10px;font-weight:500;color:var(--text-sub);
+    text-transform:uppercase;letter-spacing:0.5px;
+    padding:0.6rem 1rem;text-align:left;
+    border-bottom:0.5px solid var(--border-col);
+    background:var(--bg-page);
+  }
+  .pos-table td{
+    font-size:12px;color:var(--text-main);
+    padding:0.65rem 1rem;
+    border-bottom:0.5px solid var(--border-col);
+  }
+  .pos-table tr:last-child td{border-bottom:none;}
+  .pos-table tr:hover td{background:var(--hover-item);}
+  .role-admin{
+    font-size:10px;padding:2px 8px;
+    background:rgba(37,99,235,0.15);
+    border:0.5px solid rgba(37,99,235,0.4);
+    color:#60a5fa;
+  }
+  .role-cashier{
+    font-size:10px;padding:2px 8px;
+    background:rgba(100,116,139,0.15);
+    border:0.5px solid rgba(100,116,139,0.4);
+    color:#94a3b8;
+  }
+  .protected{
+    font-size:11px;color:var(--text-sub);
+    display:flex;align-items:center;gap:4px;
+  }
+  .empty-state{
+    padding:3rem;text-align:center;
+    font-size:13px;color:var(--text-sub);
+  }
+</style>
 
 <!-- Add User Form -->
-<div class="card mb-4">
-    <div class="card-header bg-dark text-white">Add New User</div>
-    <div class="card-body">
-        <form method="POST" action="{{ url_for('auth.add_user') }}">
-            <div class="row g-2">
-                <div class="col-md-3">
-                    <input type="text" name="username" class="form-control"
-                           placeholder="Username" required>
-                </div>
-                <div class="col-md-3">
-                    <input type="password" name="password" class="form-control"
-                           placeholder="Password" required>
-                </div>
-                <div class="col-md-3">
-                    <select name="role" class="form-select" required>
-                        <option value="cashier">Cashier</option>
-                        <option value="admin">Admin</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <button type="submit" class="btn btn-dark w-100">Add User</button>
-                </div>
-            </div>
-        </form>
+<div class="sec-card" style="margin-bottom:1.5rem;">
+  <div class="sec-hdr">
+    <i class="ti ti-plus" style="color:#22c55e;font-size:16px;"></i>
+    Add new user
+  </div>
+  <form method="POST" action="{{ url_for('auth.add_user') }}">
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="field-label">Username</label>
+        <input type="text" name="username" class="field-input"
+               placeholder="Enter username" required autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label class="field-label">Password</label>
+        <input type="password" name="password" class="field-input"
+               placeholder="Enter password" required>
+      </div>
+      <div class="form-group">
+        <label class="field-label">Role</label>
+        <select name="role" class="field-select" required>
+          <option value="cashier">Cashier</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="field-label">&nbsp;</label>
+        <button type="submit" class="btn btn-green">
+          <i class="ti ti-plus" style="font-size:14px;"></i> Add
+        </button>
+      </div>
     </div>
+  </form>
 </div>
 
 <!-- Users Table -->
-<div class="card">
-    <div class="card-header bg-dark text-white">All Users</div>
-    <div class="card-body">
-        <table class="table table-bordered table-hover">
-            <thead class="table-dark">
-                <tr>
-                    <th>ID</th>
-                    <th>Username</th>
-                    <th>Role</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for u in users %}
-                <tr>
-                    <td>{{ u[0] }}</td>
-                    <td>{{ u[1] }}</td>
-                    <td>
-                        <span class="badge {% if u[2] == 'admin' %}bg-dark{% else %}bg-secondary{% endif %}">
-                            {{ u[2] }}
-                        </span>
-                    </td>
-                    <td>
-                        {% if u[1] != 'admin' %}
-                        <a href="{{ url_for('auth.delete_user', id=u[0]) }}"
-                           class="btn btn-sm btn-danger"
-                           onclick="return confirm('Delete this user?')">
-                            Delete
-                        </a>
-                        {% else %}
-                        <span class="text-muted">Protected</span>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<div class="sec-card">
+  <div class="sec-hdr" style="justify-content:space-between;">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <i class="ti ti-shield-lock" style="color:#2563eb;font-size:16px;"></i>
+      All users
     </div>
+    <span style="font-size:11px;color:var(--text-sub);">
+      {{ users|length }} accounts
+    </span>
+  </div>
+
+  {% if users %}
+  <table class="pos-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Username</th>
+        <th>Role</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for u in users %}
+      <tr>
+        <td style="color:var(--text-sub);">#{{ u[0] }}</td>
+        <td style="font-weight:500;">
+          <i class="ti ti-user" style="font-size:13px;color:var(--text-sub);margin-right:4px;"></i>
+          {{ u[1] }}
+        </td>
+        <td>
+          {% if u[2] == 'admin' %}
+          <span class="role-admin">Admin</span>
+          {% else %}
+          <span class="role-cashier">Cashier</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if u[1] != 'Yash' %}
+          <a href="{{ url_for('auth.delete_user', id=u[0]) }}"
+             class="btn btn-red"
+             onclick="return showConfirm(event, this.href)">
+            <i class="ti ti-trash" style="font-size:13px;"></i>
+          </a>
+          {% else %}
+          <span class="protected">
+            <i class="ti ti-lock" style="font-size:13px;"></i> Protected
+          </span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">
+    <i class="ti ti-users" style="font-size:32px;display:block;margin-bottom:8px;color:var(--border-col);"></i>
+    No users found
+  </div>
+  {% endif %}
 </div>
+
+<!-- Confirm Modal -->
+<div id="confirmModal" style="
+  display:none;position:fixed;top:0;left:0;
+  width:100%;height:100%;z-index:1000;
+  background:rgba(0,0,0,0.6);
+  align-items:center;justify-content:center;">
+  <div style="
+    background:var(--bg-card);
+    border:0.5px solid var(--border-col);
+    padding:2rem;width:100%;max-width:380px;">
+    <div style="
+      width:44px;height:44px;
+      background:rgba(220,38,38,0.15);
+      border:0.5px solid rgba(220,38,38,0.3);
+      display:flex;align-items:center;justify-content:center;
+      margin-bottom:1rem;">
+      <i class="ti ti-trash" style="color:#dc2626;font-size:20px;"></i>
+    </div>
+    <p style="font-size:15px;font-weight:500;color:var(--text-main);margin-bottom:6px;">
+      Delete this user?
+    </p>
+    <p style="font-size:13px;color:var(--text-sub);margin-bottom:1.5rem;">
+      This user will lose all access immediately. This cannot be undone.
+    </p>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button onclick="closeConfirm()" style="
+        padding:8px 16px;background:transparent;
+        border:0.5px solid var(--border-col);
+        color:var(--text-sub);font-family:'Inter',sans-serif;
+        font-size:13px;cursor:pointer;">
+        Cancel
+      </button>
+      <a id="confirmDeleteBtn" href="#" style="
+        padding:8px 16px;background:#dc2626;color:#fff;
+        font-family:'Inter',sans-serif;font-size:13px;
+        font-weight:500;text-decoration:none;
+        display:flex;align-items:center;gap:6px;">
+        <i class="ti ti-trash" style="font-size:14px;"></i> Delete
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+function showConfirm(e, href) {
+  e.preventDefault();
+  document.getElementById('confirmDeleteBtn').href = href;
+  document.getElementById('confirmModal').style.display = 'flex';
+  return false;
+}
+function closeConfirm() {
+  document.getElementById('confirmModal').style.display = 'none';
+}
+document.getElementById('confirmModal').addEventListener('click', function(e) {
+  if (e.target === this) closeConfirm();
+});
+</script>
 {% endblock %}

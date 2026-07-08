@@ -91,8 +91,18 @@ def update(id):
 @admin_required
 def delete(id):
     cursor = mysql.connection.cursor()
+
+    # Check karo supplier ki koi purchase hai ya nahi
+    cursor.execute("SELECT COUNT(*) FROM purchase WHERE supplier_id = %s", (id,))
+    purchase_count = cursor.fetchone()[0]
+
+    if purchase_count > 0:
+        cursor.close()
+        flash(f'Cannot delete — this supplier has {purchase_count} purchase(s) on record. Delete those purchases first.', 'danger')
+        return redirect(url_for('suppliers.index'))
+
     cursor.execute("DELETE FROM supplier WHERE supplier_id = %s", (id,))
     mysql.connection.commit()
     cursor.close()
-    flash('Supplier deleted successfully successfully', 'success')
+    flash('Supplier deleted successfully.', 'success')
     return redirect(url_for('suppliers.index'))
