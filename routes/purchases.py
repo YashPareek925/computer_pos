@@ -63,23 +63,27 @@ def index():
 @login_required
 @admin_required
 def add():
-    bill_no = request.form['bill_no']
+    # Auto generate bill number
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT COUNT(*) FROM purchase")
+    count = cursor.fetchone()[0]
+    bill_no = f"{str(count + 1).zfill(4)}"
+
     purchase_date = request.form['date']
     product_id = request.form['product_id']
     supplier_id = request.form['supplier_id']
     quantity = request.form['quantity']
     cost_price = request.form['cost_price']
 
-    cursor = mysql.connection.cursor()
     cursor.execute(
-        """INSERT INTO purchase 
-           (bill_no, date, product_id, supplier_id, quantity, cost_price) 
+        """INSERT INTO purchase
+           (bill_no, date, product_id, supplier_id, quantity, cost_price)
            VALUES (%s, %s, %s, %s, %s, %s)""",
         (bill_no, purchase_date, product_id, supplier_id, quantity, cost_price)
     )
     mysql.connection.commit()
     cursor.close()
-    flash('Purchase added successfully. Stock updated automatically.', 'success')
+    flash(f'Purchase {bill_no} added successfully.', 'success')
     return redirect(url_for('purchases.index'))
 
 # Delete Purchase

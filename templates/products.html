@@ -1,98 +1,282 @@
 {% extends 'base.html' %}
-
 {% block title %}Products - POS System{% endblock %}
+{% block page_title %}Products{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h3>Product Management</h3>
-</div>
-
-<!-- Search Bar -->
-<div class="mb-3">
-    <input type="text" id="searchInput" class="form-control"
-           placeholder="Search product by name..." onkeyup="liveSearch()">
-</div>
+<style>
+  .sec-card{background:var(--bg-card);border:0.5px solid var(--border-col);}
+  .sec-hdr{
+    padding:0.8rem 1.2rem;
+    border-bottom:0.5px solid var(--border-col);
+    font-size:13px;font-weight:500;
+    color:var(--text-main);
+    display:flex;align-items:center;gap:8px;
+  }
+  .field-label{
+    display:block;font-size:11px;font-weight:500;
+    color:var(--text-label);text-transform:uppercase;
+    letter-spacing:0.6px;margin-bottom:6px;
+  }
+  .field-input{
+    width:100%;background:var(--bg-input);
+    border:0.5px solid var(--border-col);
+    color:var(--text-main);font-family:'Inter',sans-serif;
+    font-size:13px;padding:8px 12px;outline:none;
+    transition:border-color 0.15s;
+  }
+  .field-input:focus{border-color:#2563eb;}
+  .form-grid{
+    display:grid;
+    grid-template-columns:2fr 1fr 1fr 1fr auto;
+    gap:0.8rem;padding:1.2rem;align-items:end;
+  }
+  .form-group{display:flex;flex-direction:column;}
+  .btn{
+    padding:8px 14px;font-family:'Inter',sans-serif;
+    font-size:13px;font-weight:500;border:none;
+    cursor:pointer;transition:background 0.15s;
+    display:flex;align-items:center;gap:6px;
+  }
+  .btn-green{background:#22c55e;color:#fff;}
+  .btn-green:hover{background:#16a34a;}
+  .btn-blue{background:#2563eb;color:#fff;font-size:12px;padding:5px 10px;}
+  .btn-blue:hover{background:#1d4ed8;}
+  .btn-red{
+    background:transparent;border:0.5px solid #dc2626;
+    color:#dc2626;font-size:12px;padding:5px 10px;
+  }
+  .btn-red:hover{background:rgba(220,38,38,0.1);}
+  .pos-table{width:100%;border-collapse:collapse;}
+  .pos-table th{
+    font-size:10px;font-weight:500;color:var(--text-sub);
+    text-transform:uppercase;letter-spacing:0.5px;
+    padding:0.6rem 1rem;text-align:left;
+    border-bottom:0.5px solid var(--border-col);
+    background:var(--bg-page);
+  }
+  .pos-table td{
+    font-size:12px;color:var(--text-main);
+    padding:0.65rem 1rem;
+    border-bottom:0.5px solid var(--border-col);
+  }
+  .pos-table tr:last-child td{border-bottom:none;}
+  .pos-table tr:hover td{background:var(--hover-item);}
+  .low-badge{
+    font-size:10px;padding:2px 7px;
+    background:rgba(220,38,38,0.15);
+    border:0.5px solid rgba(220,38,38,0.4);
+    color:#fca5a5;margin-left:6px;
+  }
+  .ok-badge{
+    font-size:10px;padding:2px 7px;
+    background:rgba(34,197,94,0.15);
+    border:0.5px solid rgba(34,197,94,0.4);
+    color:#86efac;
+  }
+  .price-val{color:#22c55e;font-weight:500;}
+  .cost-val{color:var(--text-sub);}
+  .actions-wrap{display:flex;align-items:center;gap:6px;}
+  .search-wrap{
+    padding:1rem 1.2rem;
+    border-bottom:0.5px solid var(--border-col);
+    display:flex;align-items:center;gap:8px;
+  }
+  .search-input{
+    flex:1;background:var(--bg-input);
+    border:0.5px solid var(--border-col);
+    color:var(--text-main);font-family:'Inter',sans-serif;
+    font-size:13px;padding:7px 12px;outline:none;
+    transition:border-color 0.15s;
+  }
+  .search-input:focus{border-color:#2563eb;}
+  .empty-state{
+    padding:3rem;text-align:center;
+    font-size:13px;color:var(--text-sub);
+  }
+  @media(max-width:1024px){
+    .form-grid{grid-template-columns:1fr 1fr;}
+  }
+</style>
 
 <!-- Add Product Form -->
-<div class="card mb-4">
-    <div class="card-header bg-dark text-white">Add New Product</div>
-    <div class="card-body">
-        <form method="POST" action="{{ url_for('products.add') }}">
-            <div class="row">
-                <div class="col-md-3">
-                    <input type="text" name="product_name" class="form-control"
-                           placeholder="Product Name" required>
-                </div>
-                <div class="col-md-2">
-                    <input type="number" name="stock" class="form-control"
-                           placeholder="Stock" required>
-                </div>
-                <div class="col-md-2">
-                    <input type="number" step="0.01" name="cost_price"
-                           class="form-control" placeholder="Cost Price" required>
-                </div>
-                <div class="col-md-2">
-                    <input type="number" step="0.01" name="sales_price"
-                           class="form-control" placeholder="Sales Price" required>
-                </div>
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-dark w-100">Add Product</button>
-                </div>
-            </div>
-        </form>
+<div class="sec-card" style="margin-bottom:1.5rem;">
+  <div class="sec-hdr">
+    <i class="ti ti-plus" style="color:#22c55e;font-size:16px;"></i>
+    Add new product
+  </div>
+  <form method="POST" action="{{ url_for('products.add') }}">
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="field-label">Product name</label>
+        <input type="text" name="product_name" class="field-input"
+               placeholder="Enter product name" required>
+      </div>
+      <div class="form-group">
+        <label class="field-label">Stock</label>
+        <input type="number" name="stock" class="field-input"
+               placeholder="0" min="0" required>
+      </div>
+      <div class="form-group">
+        <label class="field-label">Cost price (₹)</label>
+        <input type="number" step="0.01" name="cost_price"
+               class="field-input" placeholder="0.00" required>
+      </div>
+      <div class="form-group">
+        <label class="field-label">Sales price (₹)</label>
+        <input type="number" step="0.01" name="sales_price"
+               class="field-input" placeholder="0.00" required>
+      </div>
+      <div class="form-group">
+        <label class="field-label">&nbsp;</label>
+        <button type="submit" class="btn btn-green">
+          <i class="ti ti-plus" style="font-size:14px;"></i> Add
+        </button>
+      </div>
     </div>
+  </form>
 </div>
 
 <!-- Products Table -->
-<div class="card">
-    <div class="card-header bg-dark text-white">All Products</div>
-    <div class="card-body">
-        <table class="table table-bordered table-hover" id="productTable">
-            <thead class="table-dark">
-                <tr>
-                    <th>ID</th>
-                    <th>Product Name</th>
-                    <th>Stock</th>
-                    <th>Cost Price</th>
-                    <th>Sales Price</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for p in products %}
-                <tr class="{% if p[2] < 5 %}table-danger{% endif %}">
-                    <td>{{ p[0] }}</td>
-                    <td>{{ p[1] }}</td>
-                    <td>
-                        {{ p[2] }}
-                        {% if p[2] < 5 %}
-                            <span class="badge bg-danger">Low Stock</span>
-                        {% endif %}
-                    </td>
-                    <td>₹{{ p[3] }}</td>
-                    <td>₹{{ p[4] }}</td>
-                    <td>
-                        <a href="{{ url_for('products.edit', id=p[0]) }}"
-                           class="btn btn-sm btn-warning">Edit</a>
-                        <a href="{{ url_for('products.delete', id=p[0]) }}"
-                           class="btn btn-sm btn-danger"
-                           onclick="return confirm('Are you sure?')">Delete</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<div class="sec-card">
+  <div class="sec-hdr" style="justify-content:space-between;">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <i class="ti ti-box" style="color:#2563eb;font-size:16px;"></i>
+      All products
     </div>
+    <span style="font-size:11px;color:var(--text-sub);">
+      {{ products|length }} items
+    </span>
+  </div>
+
+  <div class="search-wrap">
+    <i class="ti ti-search" style="color:var(--text-sub);font-size:16px;"></i>
+    <input type="text" class="search-input"
+           placeholder="Search by product name..."
+           onkeyup="searchTable(this.value)">
+  </div>
+
+  {% if products %}
+  <table class="pos-table" id="productTable">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Product name</th>
+        <th>Stock</th>
+        <th>Cost price</th>
+        <th>Sales price</th>
+        <th>Margin</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in products %}
+      <tr>
+        <td style="color:var(--text-sub);">#{{ p[0] }}</td>
+        <td style="font-weight:500;">{{ p[1] }}</td>
+        <td>
+          {{ p[2] }}
+          {% if p[2] < 5 %}
+            <span class="low-badge">Low</span>
+          {% else %}
+            <span class="ok-badge">OK</span>
+          {% endif %}
+        </td>
+        <td class="cost-val">&#8377;{{ p[3] }}</td>
+        <td class="price-val">&#8377;{{ p[4] }}</td>
+        <td style="color:#f59e0b;">
+          &#8377;{{ "%.2f"|format(p[4] - p[3]) }}
+        </td>
+        <td class="actions-wrap">
+          <a href="{{ url_for('products.edit', id=p[0]) }}"
+             class="btn btn-blue">
+            <i class="ti ti-edit" style="font-size:13px;"></i> Edit
+          </a>
+          <a href="{{ url_for('products.delete', id=p[0]) }}"
+             class="btn btn-red"
+             onclick="return showConfirm(event, this.href)">
+            <i class="ti ti-trash" style="font-size:13px;"></i>
+          </a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">
+    <i class="ti ti-box" style="font-size:32px;display:block;margin-bottom:8px;color:var(--border-col);"></i>
+    No products added yet
+  </div>
+  {% endif %}
+</div>
+
+<!-- Custom Confirm Modal -->
+<div id="confirmModal" style="
+  display:none;position:fixed;top:0;left:0;
+  width:100%;height:100%;z-index:1000;
+  background:rgba(0,0,0,0.6);
+  align-items:center;justify-content:center;">
+  <div style="
+    background:var(--bg-card);
+    border:0.5px solid var(--border-col);
+    padding:2rem;width:100%;max-width:380px;">
+    <div style="
+      width:44px;height:44px;
+      background:rgba(220,38,38,0.15);
+      border:0.5px solid rgba(220,38,38,0.3);
+      display:flex;align-items:center;justify-content:center;
+      margin-bottom:1rem;">
+      <i class="ti ti-trash" style="color:#dc2626;font-size:20px;"></i>
+    </div>
+    <p style="font-size:15px;font-weight:500;color:var(--text-main);margin-bottom:6px;">
+      Delete this product?
+    </p>
+    <p style="font-size:13px;color:var(--text-sub);margin-bottom:1.5rem;">
+      This will permanently remove the product. This action cannot be undone.
+    </p>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button onclick="closeConfirm()"
+              style="
+                padding:8px 16px;background:transparent;
+                border:0.5px solid var(--border-col);
+                color:var(--text-sub);font-family:'Inter',sans-serif;
+                font-size:13px;cursor:pointer;">
+        Cancel
+      </button>
+      <a id="confirmDeleteBtn" href="#"
+         style="
+           padding:8px 16px;background:#dc2626;color:#fff;
+           font-family:'Inter',sans-serif;font-size:13px;
+           font-weight:500;text-decoration:none;
+           display:flex;align-items:center;gap:6px;">
+        <i class="ti ti-trash" style="font-size:14px;"></i> Delete
+      </a>
+    </div>
+  </div>
 </div>
 
 <script>
-function liveSearch() {
-    let input = document.getElementById('searchInput').value.toLowerCase();
-    let rows = document.querySelectorAll('#productTable tbody tr');
-    rows.forEach(row => {
-        let name = row.cells[1].textContent.toLowerCase();
-        row.style.display = name.includes(input) ? '' : 'none';
-    });
+function searchTable(query) {
+  const rows = document.querySelectorAll('#productTable tbody tr');
+  query = query.toLowerCase();
+  rows.forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(query) ? '' : 'none';
+  });
 }
+
+function showConfirm(e, href) {
+  e.preventDefault();
+  document.getElementById('confirmDeleteBtn').href = href;
+  const modal = document.getElementById('confirmModal');
+  modal.style.display = 'flex';
+  return false;
+}
+
+function closeConfirm() {
+  document.getElementById('confirmModal').style.display = 'none';
+}
+
+document.getElementById('confirmModal').addEventListener('click', function(e) {
+  if (e.target === this) closeConfirm();
+});
 </script>
 {% endblock %}

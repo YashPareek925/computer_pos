@@ -1,95 +1,269 @@
 {% extends 'base.html' %}
 {% block title %}Purchases - POS System{% endblock %}
+{% block page_title %}Purchases{% endblock %}
 
 {% block content %}
-<h3 class="mb-3">Purchase Management</h3>
+<style>
+  .sec-card{background:var(--bg-card);border:0.5px solid var(--border-col);}
+  .sec-hdr{
+    padding:0.8rem 1.2rem;
+    border-bottom:0.5px solid var(--border-col);
+    font-size:13px;font-weight:500;color:var(--text-main);
+    display:flex;align-items:center;gap:8px;
+  }
+  .field-label{
+    display:block;font-size:11px;font-weight:500;
+    color:var(--text-label);text-transform:uppercase;
+    letter-spacing:0.6px;margin-bottom:6px;
+  }
+  .field-input,.field-select{
+    width:100%;background:var(--bg-input);
+    border:0.5px solid var(--border-col);
+    color:var(--text-main);font-family:'Inter',sans-serif;
+    font-size:13px;padding:8px 12px;outline:none;
+    transition:border-color 0.15s;
+  }
+  .field-input:focus,.field-select:focus{border-color:#2563eb;}
+  .form-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr 1fr 1fr auto;
+    gap:0.8rem;padding:1.2rem;align-items:end;
+  }
+  .form-group{display:flex;flex-direction:column;}
+  .btn{
+    padding:8px 14px;font-family:'Inter',sans-serif;
+    font-size:13px;font-weight:500;border:none;
+    cursor:pointer;transition:background 0.15s;
+    display:flex;align-items:center;gap:6px;
+  }
+  .btn-green{background:#22c55e;color:#fff;}
+  .btn-green:hover{background:#16a34a;}
+  .btn-red{
+  background:transparent;
+  border:0.5px solid #dc2626;
+  color:#dc2626;
+  font-size:12px;
+  padding:5px 10px;
+  width:auto;
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+}
+  .btn-red:hover{background:rgba(220,38,38,0.1);}
+  .pos-table{width:100%;border-collapse:collapse;}
+  .pos-table th{
+    font-size:10px;font-weight:500;color:var(--text-sub);
+    text-transform:uppercase;letter-spacing:0.5px;
+    padding:0.6rem 1rem;text-align:left;
+    border-bottom:0.5px solid var(--border-col);
+    background:var(--bg-page);
+  }
+  .pos-table td{
+    font-size:12px;color:var(--text-main);
+    padding:0.65rem 1rem;
+    border-bottom:0.5px solid var(--border-col);
+  }
+  .pos-table tr:last-child td{border-bottom:none;}
+  .pos-table tr:hover td{background:var(--hover-item);}
+  .bill-no{color:#3b82f6;font-weight:500;}
+  .total-val{color:#22c55e;font-weight:500;}
+  .search-wrap{
+    padding:1rem 1.2rem;
+    border-bottom:0.5px solid var(--border-col);
+    display:flex;align-items:center;gap:8px;
+  }
+  .search-input{
+    flex:1;background:var(--bg-input);
+    border:0.5px solid var(--border-col);
+    color:var(--text-main);font-family:'Inter',sans-serif;
+    font-size:13px;padding:7px 12px;outline:none;
+    transition:border-color 0.15s;
+  }
+  .search-input:focus{border-color:#2563eb;}
+  .empty-state{
+    padding:3rem;text-align:center;
+    font-size:13px;color:var(--text-sub);
+  }
+  @media(max-width:1200px){
+    .form-grid{grid-template-columns:repeat(3,1fr);}
+  }
+</style>
 
 <!-- Add Purchase Form -->
-<div class="card mb-4">
-    <div class="card-header bg-dark text-white">Add New Purchase</div>
-    <div class="card-body">
-        <form method="POST" action="{{ url_for('purchases.add') }}">
-            <div class="row g-2">
-                <div class="col-md-2">
-                    <input type="text" name="bill_no" class="form-control"
-                           placeholder="Bill No" required>
-                </div>
-                <div class="col-md-2">
-                    <input type="date" name="date" class="form-control"
-                           value="{{ today }}" required>
-                </div>
-                <div class="col-md-2">
-                    <select name="product_id" class="form-select" required>
-                        <option value="">Select Product</option>
-                        {% for p in products %}
-                        <option value="{{ p[0] }}">{{ p[1] }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <select name="supplier_id" class="form-select" required>
-                        <option value="">Select Supplier</option>
-                        {% for s in suppliers %}
-                        <option value="{{ s[0] }}">{{ s[1] }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-1">
-                    <input type="number" name="quantity" class="form-control"
-                           placeholder="Qty" required>
-                </div>
-                <div class="col-md-2">
-                    <input type="number" step="0.01" name="cost_price"
-                           class="form-control" placeholder="Cost Price" required>
-                </div>
-                <div class="col-md-1">
-                    <button type="submit" class="btn btn-dark w-100">Add</button>
-                </div>
-            </div>
-        </form>
+<div class="sec-card" style="margin-bottom:1.5rem;">
+  <div class="sec-hdr">
+    <i class="ti ti-plus" style="color:#22c55e;font-size:16px;"></i>
+    Add new purchase
+  </div>
+  <form method="POST" action="{{ url_for('purchases.add') }}">
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="field-label">Date</label>
+        <input type="date" name="date" class="field-input"
+               value="{{ today }}" required>
+      </div>
+      <div class="form-group">
+        <label class="field-label">Product</label>
+        <select name="product_id" class="field-select" required>
+          <option value="">Select product</option>
+          {% for p in products %}
+          <option value="{{ p[0] }}">{{ p[1] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="field-label">Supplier</label>
+        <select name="supplier_id" class="field-select" required>
+          <option value="">Select supplier</option>
+          {% for s in suppliers %}
+          <option value="{{ s[0] }}">{{ s[1] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="field-label">Quantity</label>
+        <input type="number" name="quantity" class="field-input"
+               placeholder="0" min="1" required>
+      </div>
+      <div class="form-group">
+        <label class="field-label">Cost price (₹)</label>
+        <input type="number" step="0.01" name="cost_price"
+               class="field-input" placeholder="0.00" required>
+      </div>
+      <div class="form-group">
+        <label class="field-label">&nbsp;</label>
+        <button type="submit" class="btn btn-green">
+          <i class="ti ti-plus" style="font-size:14px;"></i> Add
+        </button>
+      </div>
     </div>
+  </form>
 </div>
 
-<!-- Purchases Table -->
-<div class="card">
-    <div class="card-header bg-dark text-white">Purchase History</div>
-    <div class="card-body">
-        <table class="table table-bordered table-hover">
-            <thead class="table-dark">
-                <tr>
-                    <th>ID</th>
-                    <th>Bill No</th>
-                    <th>Date</th>
-                    <th>Product</th>
-                    <th>Supplier</th>
-                    <th>Quantity</th>
-                    <th>Cost Price</th>
-                    <th>Total</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for p in purchases %}
-                <tr>
-                    <td>{{ p[0] }}</td>
-                    <td>{{ p[1] }}</td>
-                    <td>{{ p[2] }}</td>
-                    <td>{{ p[3] }}</td>
-                    <td>{{ p[4] }}</td>
-                    <td>{{ p[5] }}</td>
-                    <td>₹{{ p[6] }}</td>
-                    <td>₹{{ p[5] * p[6] }}</td>
-                    <td>
-                        <a href="{{ url_for('purchases.delete', id=p[0]) }}"
-                           class="btn btn-sm btn-danger"
-                           onclick="return confirm('Delete this purchase? Stock will be reversed.')">
-                           Delete
-                        </a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<!-- Purchase History -->
+<div class="sec-card">
+  <div class="sec-hdr" style="justify-content:space-between;">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <i class="ti ti-history" style="color:#2563eb;font-size:16px;"></i>
+      Purchase history
     </div>
+    <span style="font-size:11px;color:var(--text-sub);">
+      {{ purchases|length }} records
+    </span>
+  </div>
+
+  <div class="search-wrap">
+    <i class="ti ti-search" style="color:var(--text-sub);font-size:16px;"></i>
+    <input type="text" class="search-input"
+           placeholder="Search by product or supplier..."
+           onkeyup="searchTable(this.value)">
+  </div>
+
+  {% if purchases %}
+  <table class="pos-table" id="purchaseTable">
+    <thead>
+      <tr>
+        <th>Bill no.</th>
+        <th>Date</th>
+        <th>Product</th>
+        <th>Supplier</th>
+        <th>Qty</th>
+        <th>Cost price</th>
+        <th>Total</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in purchases %}
+      <tr>
+        <td class="bill-no">{{ p[1] }}</td>
+        <td>{{ p[2] }}</td>
+        <td style="font-weight:500;">{{ p[3] }}</td>
+        <td>{{ p[4] }}</td>
+        <td>{{ p[5] }}</td>
+        <td>&#8377;{{ p[6] }}</td>
+        <td class="total-val">&#8377;{{ "%.2f"|format(p[5] * p[6]) }}</td>
+        <td>
+          <a href="{{ url_for('purchases.delete', id=p[0]) }}"
+             class="btn btn-red"
+             onclick="return showConfirm(event, this.href)">
+            <i class="ti ti-trash" style="font-size:13px;"></i>
+          </a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">
+    <i class="ti ti-truck-delivery" style="font-size:32px;display:block;margin-bottom:8px;color:var(--border-col);"></i>
+    No purchases recorded yet
+  </div>
+  {% endif %}
 </div>
+
+<!-- Confirm Modal -->
+<div id="confirmModal" style="
+  display:none;position:fixed;top:0;left:0;
+  width:100%;height:100%;z-index:1000;
+  background:rgba(0,0,0,0.6);
+  align-items:center;justify-content:center;">
+  <div style="
+    background:var(--bg-card);
+    border:0.5px solid var(--border-col);
+    padding:2rem;width:100%;max-width:380px;">
+    <div style="
+      width:44px;height:44px;
+      background:rgba(220,38,38,0.15);
+      border:0.5px solid rgba(220,38,38,0.3);
+      display:flex;align-items:center;justify-content:center;
+      margin-bottom:1rem;">
+      <i class="ti ti-trash" style="color:#dc2626;font-size:20px;"></i>
+    </div>
+    <p style="font-size:15px;font-weight:500;color:var(--text-main);margin-bottom:6px;">
+      Delete this purchase?
+    </p>
+    <p style="font-size:13px;color:var(--text-sub);margin-bottom:1.5rem;">
+      Stock will be reversed automatically. This cannot be undone.
+    </p>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button onclick="closeConfirm()" style="
+        padding:8px 16px;background:transparent;
+        border:0.5px solid var(--border-col);
+        color:var(--text-sub);font-family:'Inter',sans-serif;
+        font-size:13px;cursor:pointer;">
+        Cancel
+      </button>
+      <a id="confirmDeleteBtn" href="#" style="
+        padding:8px 16px;background:#dc2626;color:#fff;
+        font-family:'Inter',sans-serif;font-size:13px;
+        font-weight:500;text-decoration:none;
+        display:flex;align-items:center;gap:6px;">
+        <i class="ti ti-trash" style="font-size:14px;"></i> Delete
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+function searchTable(query) {
+  const rows = document.querySelectorAll('#purchaseTable tbody tr');
+  query = query.toLowerCase();
+  rows.forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(query) ? '' : 'none';
+  });
+}
+function showConfirm(e, href) {
+  e.preventDefault();
+  document.getElementById('confirmDeleteBtn').href = href;
+  document.getElementById('confirmModal').style.display = 'flex';
+  return false;
+}
+function closeConfirm() {
+  document.getElementById('confirmModal').style.display = 'none';
+}
+document.getElementById('confirmModal').addEventListener('click', function(e) {
+  if (e.target === this) closeConfirm();
+});
+</script>
 {% endblock %}
