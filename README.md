@@ -6,7 +6,14 @@ A web-based Point of Sale and Inventory Management System built for computer sho
 
 ## Screenshots
 
-> Add screenshots here after deployment
+### Login Page
+https://github.com/YashPareek925/computer_pos/blob/ad425f2e381f37a84e4d11f3a0b58be8ec32d4fb/login.png
+
+### Sales Page
+https://github.com/YashPareek925/computer_pos/blob/ad425f2e381f37a84e4d11f3a0b58be8ec32d4fb/Sales.png
+
+### Dashboard Page
+https://github.com/YashPareek925/computer_pos/blob/ad425f2e381f37a84e4d11f3a0b58be8ec32d4fb/Dashboard.png
 
 ---
 
