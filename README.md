@@ -61,25 +61,25 @@ A web-based Point of Sale and Inventory Management System built for computer sho
 ---
 
 ## Project Structure
+
+```
 computer_pos/
-├── app.py                  → Main Flask application
-├── config.py               → DB credentials (not in git)
-├── extensions.py           → MySQL instance
-├── requirements.txt        → Python dependencies
-├── schema.sql              → Database structure
+├── app.py
+├── config.py
+├── extensions.py
+├── requirements.txt
+├── schema.sql
 ├── .gitignore
-│
 ├── routes/
-│   ├── auth.py             → Login, logout, manage users
-│   ├── products.py         → Product CRUD
-│   ├── sales.py            → Sales logic + WhatsApp billing
-│   ├── purchases.py        → Purchase logic
-│   ├── customers.py        → Customer management
-│   ├── suppliers.py        → Supplier management
-│   └── dashboard.py        → Dashboard metrics
-│
+│   ├── auth.py
+│   ├── products.py
+│   ├── sales.py
+│   ├── purchases.py
+│   ├── customers.py
+│   ├── suppliers.py
+│   └── dashboard.py
 ├── templates/
-│   ├── base.html           → Base layout with sidebar
+│   ├── base.html
 │   ├── login.html
 │   ├── dashboard.html
 │   ├── products.html
@@ -94,27 +94,30 @@ computer_pos/
 │   ├── 404.html
 │   ├── 403.html
 │   └── 500.html
-│
 └── static/
     └── css/
         └── style.css
+```
 
 ---
 
 ## Database Schema
 
-```sql
-users       → Login credentials and roles
-product     → Inventory with cost and sales price
-customer    → Customer details with WhatsApp number
-supplier    → Supplier information
-purchase    → Stock purchase records (triggers stock +)
-sales       → Sales transaction records (triggers stock -)
-```
+| Table | Description |
+|---|---|
+| users | Login credentials and roles |
+| product | Inventory with cost and sales price |
+| customer | Customer details with WhatsApp number |
+| supplier | Supplier information |
+| purchase | Stock purchase records |
+| sales | Sales transaction records |
 
 ### MySQL Triggers
-after_sale_insert    → Automatically deducts stock on sale,
-after_purchase_insert → Automatically adds stock on purchase
+
+| Trigger | Action |
+|---|---|
+| after_sale_insert | Automatically deducts stock when a sale is recorded |
+| after_purchase_insert | Automatically adds stock when a purchase is recorded |
 
 ---
 
@@ -211,7 +214,7 @@ The cashier clicks "Bill" and WhatsApp opens with the message ready to send to t
 
 ## Developer
 
-Yash Pareek
+**Yash Pareek**
 BCA Final Year
 Shri Jain College
 GitHub: https://github.com/YashPareek925
