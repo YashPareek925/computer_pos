@@ -214,9 +214,12 @@ The cashier clicks "Bill" and WhatsApp opens with the message ready to send to t
 
 ## Developer
 
-**Yash Pareek**
-BCA Final Year
-Shri Jain College
+**Yash Pareek**  
+
+BCA Final Year  
+
+Shri Jain College  
+
 GitHub: https://github.com/YashPareek925
 
 ---
