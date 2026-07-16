@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
-from extensions import mysql
+from extensions import get_db
 
 products = Blueprint('products', __name__)
 
