@@ -1,4 +1,6 @@
 flask
-flask-mysqldb
+PyMySQL
+flask-login
 bcrypt
 fpdf2
+gunicorn
