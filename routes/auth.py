@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 import bcrypt
-from extensions import mysql
+from extensions import get_db
 
 auth = Blueprint('auth', __name__)
 

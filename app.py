@@ -1,19 +1,14 @@
-import pymysql
-pymysql.install_as_MySQLdb()
 from flask import Flask, redirect, url_for, render_template
-from flask_mysqldb import MySQL
 import os
 
 app = Flask(__name__)
 
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'fallback_secret_key')
-app.config['MYSQL_HOST'] = os.environ.get('MYSQLHOST')
-app.config['MYSQL_USER'] = os.environ.get('MYSQLUSER')
-app.config['MYSQL_PASSWORD'] = os.environ.get('MYSQLPASSWORD')
-app.config['MYSQL_DB'] = os.environ.get('MYSQLDATABASE')
-app.config['MYSQL_PORT'] = int(os.environ.get('MYSQLPORT', 3306))
-
-mysql = MySQL(app)
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'fallback_key')
+app.config['MYSQL_HOST'] = os.environ.get('MYSQLHOST', 'localhost')
+app.config['MYSQL_USER'] = os.environ.get('MYSQLUSER', 'root')
+app.config['MYSQL_PASSWORD'] = os.environ.get('MYSQLPASSWORD', '')
+app.config['MYSQL_DB'] = os.environ.get('MYSQLDATABASE', 'computer_pos')
+app.config['MYSQL_PORT'] = os.environ.get('MYSQLPORT', 3306)
 
 @app.errorhandler(404)
 def page_not_found(e):

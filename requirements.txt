@@ -1,6 +1,4 @@
 flask
 PyMySQL
-flask-login
 bcrypt
-fpdf2
 gunicorn

@@ -1,4 +1,13 @@
 import pymysql
-pymysql.install_as_MySQLdb()
-from flask_mysqldb import MySQL
-mysql = MySQL()
+
+def get_db():
+    from flask import current_app
+    connection = pymysql.connect(
+        host=current_app.config['MYSQL_HOST'],
+        user=current_app.config['MYSQL_USER'],
+        password=current_app.config['MYSQL_PASSWORD'],
+        database=current_app.config['MYSQL_DB'],
+        port=int(current_app.config['MYSQL_PORT']),
+        cursorclass=pymysql.cursors.Cursor
+    )
+    return connection
